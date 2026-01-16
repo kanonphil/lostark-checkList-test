@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# local env files
+.env
+.env.local
+.env.*.local
+
+# .env.production은 커밋(배포용)
+!.env.production
+
+# logs
+npm-debug.log*
