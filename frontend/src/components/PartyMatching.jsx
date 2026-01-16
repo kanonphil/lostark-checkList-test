@@ -12,6 +12,10 @@ function PartyMatching() {
   const [manualParty, setManualParty] = useState(null)
   const [completing, setCompleting] = useState(false)
 
+  // 완료된 파티 상태 추가
+  const [completedParties, setCompletedParties] = useState([])
+  const [showCompletedParties, setShowCompletedParties] = useState(false)
+
   useEffect(() => {
     loadRaids();
   }, [])
@@ -39,6 +43,10 @@ function PartyMatching() {
       // 파티 추천 조회
       const recommendResponse = await api.get(`/party/recommend/${raid.id}`)
       setPartyRecommendations(recommendResponse.data)
+
+      // 완료된 파티 조회
+      const completedResponse = await api.get(`/party/completed/${raid.id}`)
+      setCompletedParties(completedResponse.data)
     } catch (error) {
       console.error('파티 매칭 실패:', error)
       alert('파티 매칭에 실패했습니다.')
@@ -175,6 +183,80 @@ function PartyMatching() {
 
       {!loading && selectedRaid && availableCharacters && (
         <>
+          {/* 완료된 파티 목록 (접기 / 펼치기) */}
+          {completedParties.length > 0 && (
+            <div style={{ marginBottom: '30px' }}>
+              <button
+                onClick={() => setShowCompletedParties(!showCompletedParties)}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span>완료된 파티 ({completedParties.length}개)</span>
+                <span>{showCompletedParties ? '▲' : '▼'}</span>
+              </button>
+
+              {showCompletedParties && (
+                <div style={{
+                  marginTop: '15px', 
+                  padding: '20px', 
+                  backgroundColor: '#fafafa',
+                  borderRadius: '8px',
+                  border: '1px solid #e0e0e0'
+                }}>
+                  {completedParties.map((party, index) => (
+                    <div
+                      key={party.id}
+                      style={{
+                        backgroundColor: 'white',
+                        padding: '15px',
+                        borderRadius: '8px',
+                        marginBottom: index < completedParties.length - 1 ? '10px' : '0',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                      }}
+                    >
+                      <div style={{
+                        fontSize: '14px', 
+                        color: '#666', 
+                        marginBottom: '10px',
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                      }}>
+                        <span>파티 {index + 1}</span>
+                        <span>{new Date(party.completedAt).toLocaleString('ko-KR')}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        {party.characters.map(char => (
+                          <div
+                            key={char.id}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
+                              borderRadius: '5px',
+                              fontSize: '13px',
+                            }}
+                          >
+                            {char.characterName} ({char.className})
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {/* ✅ 수동 파티 구성 */}
           <div style={{ marginBottom: '30px' }}>
             <h3 style={{ marginBottom: '15px' }}>수동 파티 구성</h3>

@@ -88,9 +88,13 @@ function App() {
         color: 'white',
         marginBottom: '20px'
       }}>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-          <h1>로스트아크 레이드 체크리스트</h1>
-          <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+        {/* 제목과 유저정보 분리 */}
+        <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+          {/* 제목 */}
+          <h1 style={{margin: 0}}>로스트아크 레이드 체크리스트</h1>
+
+          {/* 유저 정보 */}
+          <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '15px'}}>
             <span>{currentUser.username}님</span>
             <button
               onClick={handleLogout}

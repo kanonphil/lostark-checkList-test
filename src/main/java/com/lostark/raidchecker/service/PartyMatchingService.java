@@ -284,4 +284,29 @@ public class PartyMatchingService {
     int daysToSubtract = (dayOfWeek + 2) % 7;
     return now.minusDays(daysToSubtract).toLocalDate().atStartOfDay();
   }
+
+  /**
+   * 완료된 파티 목록 (캐릭터 정보 포함)
+   */
+  public List<Map<String, Object>> getCompletedPartiesWithCharacters(Long raidId) {
+    List<PartyCompletion> completedParties = getCompletedParties(raidId);
+
+    return completedParties.stream().map(party -> {
+      // characterIds 문자열을 Long 리스트로 변환
+      List<Long> charIds = Arrays.stream(party.getCharacterIds().split(","))
+              .map(Long::parseLong)
+              .collect(Collectors.toList());
+
+      // 캐릭터 정보 조회
+      List<Character> characters = characterRepository.findAllById(charIds);
+
+      Map<String, Object> result = new HashMap<>();
+      result.put("id", party.getId());
+      result.put("completedAt", party.getCompletedAt());
+      result.put("characters", characters);
+      result.put("extraReward", party.getExtraReward());
+
+      return result;
+    }).collect(Collectors.toList());
+  }
 }

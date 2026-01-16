@@ -32,13 +32,12 @@ function CharacterList({ onCharacterSelect, currentUserId }) {
 
   if (loading) return <div style={{ padding: '20px' }}>로딩 중...</div>;
 
-  // ✅ 총 골드 계산
-  const totalGold = 0;  // 나중에 구현
+  const totalGold = 0;
 
   return (
     <div style={{ padding: '20px' }}>
       <ResetTimer />
-      <h2>내 캐릭터</h2>
+      <h2>내 캐릭터 ({characters.length}개)</h2>
 
       {/* 계정 전체 통계 */}
       <div style={{
@@ -47,47 +46,65 @@ function CharacterList({ onCharacterSelect, currentUserId }) {
         marginBottom: '20px',
         borderRadius: '8px'
       }}>
-        <h3>계정 전체 골드: {totalGold.toLocaleString()}G</h3>
+        <h3 style={{margin: 0}}>계정 전체 골드: {totalGold.toLocaleString()}G</h3>
       </div>
 
-      {/* ✅ 캐릭터 목록 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* 캐릭터 목록 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {characters.map((char) => (
           <div 
             key={char.id}
             onClick={() => onCharacterSelect && onCharacterSelect(char)}
             style={{
               border: '1px solid #ddd',
-              padding: '15px',
-              borderRadius: '8px',
+              padding: '20px',
+              borderRadius: '10px',
               backgroundColor: 'white',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               cursor: 'pointer',
-              transition: 'background-color 0.2s'
+              transition: 'all 0.2s',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f9f9f9';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'white';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+            }}
           >
             {/* 왼쪽: 캐릭터 정보 */}
             <div style={{ textAlign: 'left' }}>
-              <h3 style={{ margin: '0 0 5px 0' }}>{char.characterName || '이름없음'}</h3>
-              <p style={{ margin: '5px 0' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '20px' }}>
+                {char.characterName || '이름없음'}
+              </h3>
+              <p style={{ margin: '5px 0', color: '#666', fontSize: '15px' }}>
                 {char.className || '?'} | 레벨: {char.itemLevel?.toFixed(2) || '?'}
               </p>
-              <p style={{ margin: '5px 0' }}>
-                골드 우선순위: {char.goldPriority || 6}
+              <p style={{ margin: '5px 0', color: '#666', fontSize: '15px' }}>
+                서버: {char.serverName || '?'}
+              </p>
+              <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+                골드 우선순위: <strong>{char.goldPriority || 6}</strong>
+                {(char.goldPriority || 6) <= 6 ? ' (골드 획득)' : ' (골드 미획득)'}
               </p>
             </div>
 
             {/* 오른쪽: 골드 정보 */}
             <div style={{ textAlign: 'right' }}>
-              <p style={{ margin: '5px 0', fontSize: '18px', fontWeight: 'bold' }}>
+              <p style={{ margin: '0 0 10px 0', fontSize: '24px', fontWeight: 'bold', color: '#4CAF50' }}>
                 0G
               </p>
-              <p style={{ margin: '5px 0', color: '#666' }}>
-                완료: 0/0 (0%)
+              <p style={{ margin: '5px 0', color: '#666', fontSize: '14px' }}>
+                완료: 0/0
+              </p>
+              <p style={{ margin: '5px 0', color: '#999', fontSize: '13px' }}>
+                (0%)
               </p>
             </div>
           </div>

@@ -43,4 +43,11 @@ public class PartyMatchingController {
     Map<String, List<Map<String, Object>>> result = partyMatchingService.getAllPartyRecommendations();
     return ResponseEntity.ok(result);
   }
+
+  // 완료된 파티 목록 조회
+  @GetMapping("/completed/{raidID}")
+  public ResponseEntity<List<Map<String, Object>>> getCompletedParties(@PathVariable Long raidId) {
+    List<Map<String, Object>> completedParties = partyMatchingService.getCompletedPartiesWithCharacters(raidId);
+    return ResponseEntity.ok(completedParties);
+  }
 }
