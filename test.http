@@ -1,0 +1,73 @@
+### 1. 캐릭터 import
+POST http://localhost:8080/api/characters/import?characterName=Kanonphil208
+
+###
+
+### 2. 체크리스트 생성
+POST http://localhost:8080/api/completions/character/1/checklist
+
+###
+
+### 3. 체크리스트 확인
+GET http://localhost:8080/api/completions/character/1
+
+### 2. 카제로스 2막 노말 1관 완료 (더보기 O)
+POST http://localhost:8080/api/completions/gate/95/complete
+Content-Type: application/json
+
+{
+  "extraReward": true
+}
+
+###
+
+### 3. 카제로스 2막 하드 2관 완료 (크로스)
+POST http://localhost:8080/api/completions/gate/98/complete
+Content-Type: application/json
+
+{
+  "extraReward": false
+}
+
+###
+
+### 4. 카제로스 3막 노말 1관 완료 (2번째 그룹)
+POST http://localhost:8080/api/completions/gate/99/complete
+Content-Type: application/json
+
+{
+  "extraReward": false
+}
+
+###
+
+### 5. 카제로스 4막 하드 1관 완료 (3번째 그룹)
+POST http://localhost:8080/api/completions/gate/107/complete
+Content-Type: application/json
+
+{
+  "extraReward": false
+}
+
+###
+
+### 6. 카제로스 종막 노말 1관 완료 시도 (4번째 - 실패해야 함!)
+POST http://localhost:8080/api/completions/gate/109/complete
+Content-Type: application/json
+
+{
+  "extraReward": false
+}
+
+###
+
+### 7. 총 골드 확인
+GET http://localhost:8080/api/completions/character/1/total-gold
+
+### 캐릭터 추가 테스트
+POST http://localhost:8080/api/characters/import?characterName=Kanonphil208
+
+###
+GET https://developer-lostark.game.onstove.com/armories/characters/카논용/profiles
+authorization: bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IktYMk40TkRDSTJ5NTA5NWpjTWk5TllqY2lyZyIsImtpZCI6IktYMk40TkRDSTJ5NTA5NWpjTWk5TllqY2lyZyJ9.eyJpc3MiOiJodHRwczovL2x1ZHkuZ2FtZS5vbnN0b3ZlLmNvbSIsImF1ZCI6Imh0dHBzOi8vbHVkeS5nYW1lLm9uc3RvdmUuY29tL3Jlc291cmNlcyIsImNsaWVudF9pZCI6IjEwMDAwMDAwMDA1ODkzMjIifQ.FZOVBCvKSSHa2iW3PEPJvRXWhMcT9BohlCD-GPrDHG9MhIpaB4NLtJOFr4NJ8ICjjeV5YGxsaUi1XRGYTFKlN2KYbE4J167Myv8W5c8h8mB9BJ6e7pD31OUkt2Qz_0kWJ601upr0kPFdu-WWNsOYtxekXNZLibC3z70CyIe9WxMyUTY8aFmNo24TPjs1juQXA7QnqVv_VE5ZegMpjzXG5SGgLEoeY1O8kBe8g6iisPbu44maZR9uL77hPw97tLP-Vq8LHR4nTT1LTu2ueHC-1lhL2_VlCggd2NdXxfmyWXyvoplv1tueYsKxcR9zNpdy053iHnLUT9RfkVXkJZKmKQ
+accept: application/json

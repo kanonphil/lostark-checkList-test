@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: raid-checker
+  profiles:
+    active: ${SPRING_PROFILE:dev}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+server:
+  port: ${PORT:8080}
+
+# 로스트아크 API 설정
+lostark:
+  api:
+    base-url: https://developer-lostark.game.onstove.com
