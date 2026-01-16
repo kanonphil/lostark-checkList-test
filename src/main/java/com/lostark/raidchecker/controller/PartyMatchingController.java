@@ -45,7 +45,7 @@ public class PartyMatchingController {
   }
 
   // 완료된 파티 목록 조회
-  @GetMapping("/completed/{raidID}")
+  @GetMapping("/completed/{raidId}")
   public ResponseEntity<List<Map<String, Object>>> getCompletedParties(@PathVariable Long raidId) {
     List<Map<String, Object>> completedParties = partyMatchingService.getCompletedPartiesWithCharacters(raidId);
     return ResponseEntity.ok(completedParties);
