@@ -1,5 +1,6 @@
 package com.lostark.raidchecker.controller;
 
+import com.lostark.raidchecker.dto.PartyCompletionRequest;
 import com.lostark.raidchecker.service.PartyMatchingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,13 @@ public class PartyMatchingController {
   public ResponseEntity<List<Map<String, Object>>> recommendParty(@PathVariable Long raidId) {
     List<Map<String, Object>> recommendations = partyMatchingService.recommendParty(raidId);
     return ResponseEntity.ok(recommendations);
+  }
+
+  // 파티 완료 처리 (파티 매칭용)
+  @PostMapping("/complete")
+  public ResponseEntity<String> completeParty(@RequestBody PartyCompletionRequest request) {
+    partyMatchingService.completeParty(request);
+    return ResponseEntity.ok("파티 완료 처리되었습니다.");
   }
 
   // 모든 레이드의 파티 추천 조회

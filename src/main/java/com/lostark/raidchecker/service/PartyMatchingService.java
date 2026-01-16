@@ -1,13 +1,18 @@
 package com.lostark.raidchecker.service;
 
+import com.lostark.raidchecker.dto.PartyCompletionRequest;
 import com.lostark.raidchecker.entity.Character;
+import com.lostark.raidchecker.entity.PartyCompletion;
 import com.lostark.raidchecker.entity.Raid;
 import com.lostark.raidchecker.repository.CharacterRepository;
+import com.lostark.raidchecker.repository.PartyCompletionRepository;
 import com.lostark.raidchecker.repository.RaidRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +23,7 @@ public class PartyMatchingService {
   private final CharacterRepository characterRepository;
   private final RaidRepository raidRepository;
   private final WeeklyCompletionService completionService;
+  private final PartyCompletionRepository partyCompletionRepository;
 
   // 서폿 클래스 목록
   private static final Set<String> SUPPORT_CLASSES = Set.of(
@@ -40,19 +46,33 @@ public class PartyMatchingService {
 
     List<Character> allCharacters = characterRepository.findAll();
 
+    // 이번 주 완료된 파티의 캐릭터 ID 수집
+    List<PartyCompletion> completedParties = getCompletedParties(raidId);
+    Set<Long> completedCharacterIds = completedParties.stream()
+            .flatMap(party -> {
+              String[] ids = party.getCharacterIds().split(",");
+              return Arrays.stream(ids).map(Long::parseLong);
+            })
+            .collect(Collectors.toSet());
+
     // 미완료 캐릭터 필터링
     List<Character> availableCharacters = allCharacters.stream()
             .filter(character -> {
+              // 파티 완료된 캐릭터 제외
+              if (completedCharacterIds.contains(character.getId())) {
+                return false;
+              }
+
               // 아이템 레벨 체크
               if (character.getItemLevel() < raid.getRequiredItemLevel()) {
                 return false;
               }
 
-              // 완료 여부 체크
-              boolean isCompleted = completionService.isRaidCompleted(character.getId(), raidId);
-              return !isCompleted;
+              // 개인 체크리스트 완료 여부는 체크 안 함
+              return true;
             })
-            .sorted(Comparator.comparing(Character::getGoldPriority, Comparator.nullsLast(Comparator.naturalOrder()))
+            .sorted(Comparator
+                    .comparing(Character::getGoldPriority, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(Character::getItemLevel, Comparator.reverseOrder()))
             .collect(Collectors.toList());
 
@@ -225,5 +245,41 @@ public class PartyMatchingService {
     }
 
     return result;
+  }
+
+  /**
+   * 파티 완료 처리 (파티 매칭 전용)
+   */
+  @Transactional
+  public void completeParty(PartyCompletionRequest request) {
+    Raid raid = raidRepository.findById(request.getRaidId())
+            .orElseThrow(() -> new RuntimeException("레이드를 찾을 수 없습니다."));
+
+    // characterIds를 문자열로 변환
+    String characterIdsStr = request.getCharactersIds().stream()
+            .map(String::valueOf)
+            .collect(Collectors.joining(","));
+
+    PartyCompletion completion = new PartyCompletion();
+    completion.setRaid(raid);
+    completion.setCharacterIds(characterIdsStr);
+    completion.setExtraReward(request.getExtraReward());
+
+    partyCompletionRepository.save(completion);
+  }
+
+  /**
+   * 특정 레이드의 이번 주 완료된 파티 목록
+   */
+  public List<PartyCompletion> getCompletedParties(Long raidId) {
+    LocalDateTime weekStart = calculateWeekStart();
+    return partyCompletionRepository.findByRaid_IdAndWeekStart(raidId, weekStart);
+  }
+
+  private LocalDateTime calculateWeekStart() {
+    LocalDateTime now = LocalDateTime.now();
+    int dayOfWeek = now.getDayOfWeek().getValue();
+    int daysToSubtract = (dayOfWeek + 2) % 7;
+    return now.minusDays(daysToSubtract).toLocalDate().atStartOfDay();
   }
 }
