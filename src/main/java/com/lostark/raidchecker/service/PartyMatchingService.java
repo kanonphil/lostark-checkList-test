@@ -52,8 +52,8 @@ public class PartyMatchingService {
               boolean isCompleted = completionService.isRaidCompleted(character.getId(), raidId);
               return !isCompleted;
             })
-            .sorted(Comparator.comparing(Character::getGoldPriority)
-                    .thenComparing(Character::getItemLevel).reversed())
+            .sorted(Comparator.comparing(Character::getGoldPriority, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(Character::getItemLevel, Comparator.reverseOrder()))
             .collect(Collectors.toList());
 
     // 딜러/서폿 분류
