@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { characterAPI } from './services/api';
 import Login from './components/Login';
 import CharacterList from './components/CharacterList';
@@ -23,30 +23,28 @@ function App() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [characters, setCharacters] = useState([]);
 
-  /*
   useEffect(() => {
-    if (currentUser) {
-      const loadCharacters = async () => {
-        try {
-          const response = await characterAPI.getAll(currentUser.id);
-          setCharacters(response.data);
-          
-          const lastCharacterId = localStorage.getItem('lastSelectedCharacterId');
-          if (lastCharacterId) {
-            const lastChar = response.data.find(c => c.id === parseInt(lastCharacterId));
-            if (lastChar) {
-              setSelectedCharacter(lastChar);
-            }
+  if (currentUser) {
+    const loadCharacters = async () => {
+      try {
+        const response = await characterAPI.getAll(currentUser.id);
+        setCharacters(response.data);
+        
+        const lastCharacterId = localStorage.getItem('lastSelectedCharacterId');
+        if (lastCharacterId) {
+          const lastChar = response.data.find(c => c.id === parseInt(lastCharacterId));
+          if (lastChar) {
+            setSelectedCharacter(lastChar);
           }
-        } catch (error) {
-          console.error('캐릭터 로딩 실패:', error);
         }
-      };
-  
-      loadCharacters();
-    }
-  }, [refreshKey, currentUser]);
-  */
+      } catch (error) {
+        console.error('캐릭터 로딩 실패:', error);
+      }
+    };
+
+    loadCharacters();
+  }
+}, [refreshKey, currentUser]);
   
   const handleLogin = (user) => {
     setCurrentUser(user);
