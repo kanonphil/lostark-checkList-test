@@ -5,7 +5,7 @@ spring:
     active: ${SPRING_PROFILE:dev}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
 
 server:
