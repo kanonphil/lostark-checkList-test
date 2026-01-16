@@ -238,7 +238,16 @@ function PartyMatching() {
                         justifyContent: 'space-between'
                       }}>
                         <span>파티 {index + 1}</span>
-                        <span>{new Date(party.completedAt).toLocaleString('ko-KR')}</span>
+                        <span>
+                          {new Date(party.completedAt).toLocaleString('ko-KR', {
+                            timeZone: 'Asia/Seoul',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
 
                       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
