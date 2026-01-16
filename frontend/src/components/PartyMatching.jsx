@@ -132,6 +132,23 @@ function PartyMatching() {
     }
   }
 
+  // ✅ 취소 함수 추가
+  const cancelPartyCompletion = async (partyId, index) => {
+    if (!confirm(`파티 ${index + 1}의 완료를 취소하시겠습니까?`)) {
+      return;
+    }
+  
+    try {
+      await api.delete(`/party/complete/${partyId}`);
+      alert('파티 완료가 취소되었습니다!');
+      
+      // 새로고침
+      handleRaidSelect(selectedRaid);
+    } catch (error) {
+      alert(error.response?.data || '취소 실패');
+    }
+  };
+
   const isSupport = (className) => {
     return ['바드', '홀리나이트', '도화가', '발키리'].includes(className);
   };
@@ -248,6 +265,23 @@ function PartyMatching() {
                             minute: '2-digit'
                           })}
                         </span>
+                        {/* 취소 버튼 */}
+                        <button
+                        onClick={() => cancelPartyCompletion(party.id, index)}
+                        style={{
+                          padding: '4px 12px',
+                          backgroundColor: '#f44336',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f2f'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f44336'}
+                      >
+                        취소
+                      </button>
                       </div>
 
                       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
