@@ -45,11 +45,16 @@ function PartyMatching() {
       setPartyRecommendations(recommendResponse.data)
 
       // 완료된 파티 조회
-      const completedResponse = await api.get(`/party/completed/${raid.id}`)
-      setCompletedParties(completedResponse.data)
+      try {
+        const completedResponse = await api.get(`/party/completed/${raid.id}`)
+        setCompletedParties(completedResponse.data)
+      } catch (error) {
+        console.error('완료된 파티 없음:', error)
+        setCompletedParties([])
+      }
     } catch (error) {
       console.error('파티 매칭 실패:', error)
-      alert('파티 매칭에 실패했습니다.')
+      // alert('파티 매칭에 실패했습니다.')
     } finally {
       setLoading(false)
     }
