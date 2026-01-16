@@ -263,7 +263,9 @@ public class PartyMatchingService {
     PartyCompletion completion = new PartyCompletion();
     completion.setRaid(raid);
     completion.setCharacterIds(characterIdsStr);
-    completion.setExtraReward(request.getExtraReward());
+    completion.setExtraReward(
+            request.getExtraReward() != null ? request.getExtraReward() : false
+    );
 
     partyCompletionRepository.save(completion);
   }

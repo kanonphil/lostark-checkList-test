@@ -23,7 +23,7 @@ public class PartyCompletion {
   private String characterIds;
 
   @Column(nullable = false)
-  private Boolean extraReward;
+  private Boolean extraReward = false;
 
   @Column(nullable = false)
   private LocalDateTime completedAt;
