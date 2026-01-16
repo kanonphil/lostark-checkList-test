@@ -81,6 +81,10 @@ public class CharacterService {
     character.setItemLevel(Double.parseDouble(itemLevel));
     character.setGuildName(response.getGuildName());
 
+    // 자동 우선순위 부여 (현재 캐릭터 수 + 1)
+    int currentCharacterCount = characterRepository.countByUser_Id(userId);
+    character.setGoldPriority(currentCharacterCount + 1);
+
     return characterRepository.save(character);
   }
 
