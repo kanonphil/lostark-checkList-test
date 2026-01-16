@@ -9,6 +9,6 @@ import java.util.List;
 @Setter
 public class PartyCompletionRequest {
   private Long raidId;
-  private List<Long> charactersIds;
+  private List<Long> characterIds;
   private Boolean extraReward;
 }

@@ -256,7 +256,7 @@ public class PartyMatchingService {
             .orElseThrow(() -> new RuntimeException("레이드를 찾을 수 없습니다."));
 
     // characterIds를 문자열로 변환
-    String characterIdsStr = request.getCharactersIds().stream()
+    String characterIdsStr = request.getCharacterIds().stream()
             .map(String::valueOf)
             .collect(Collectors.joining(","));
 
