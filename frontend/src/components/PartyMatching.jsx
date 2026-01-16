@@ -96,8 +96,6 @@ function PartyMatching() {
       return;
     }
 
-    const extraRwward = confirm('추가 보상을 받으셨나요?')
-
     try {
       setCompleting(true)
       const characterIds = [...party.dealers, ...party.supports].map(c => c.id)
@@ -105,7 +103,7 @@ function PartyMatching() {
       await api.post('/party/complete', {
         raidId: selectedRaid.id,
         characterIds,
-        extraRwward,
+        extraRwward: false,
       })
 
       alert('파티 완료 처리되었습니다!')
