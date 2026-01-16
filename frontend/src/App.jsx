@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { characterAPI } from './services/api';
 import Login from './components/Login';
 import CharacterList from './components/CharacterList';
 import RaidChecklist from './components/RaidChecklist';
@@ -65,8 +66,15 @@ function App() {
     setActiveTab('checklist');
   };
 
-  const handleCharacterUpdate = () => {
+  const handleCharacterUpdate = async () => {
     setRefreshKey(prev => prev + 1);
+
+    try {
+    const response = await characterAPI.getAll(currentUser.id);
+    setCharacters(response.data);
+  } catch (error) {
+    console.error('캐릭터 로딩 실패:', error);
+  }
   };
 
   // 로그인 안 되어 있으면 로그인 화면

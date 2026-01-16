@@ -1,9 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-
-const api = axios.create({
-  baseURL: 'http://localhost:8080/api'
-})
+import { api } from "../services/api"
 
 function PartyMatching() {
   const [raids, setRaids] = useState([]);
@@ -22,7 +19,7 @@ function PartyMatching() {
 
   const loadRaids = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/raids')
+      const response = await axios.get('/raids')
       setRaids(response.data)
     } catch (error) {
       console.error('레이드 로딩 실패:', error)
