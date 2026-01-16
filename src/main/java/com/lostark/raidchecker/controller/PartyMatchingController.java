@@ -50,4 +50,11 @@ public class PartyMatchingController {
     List<Map<String, Object>> completedParties = partyMatchingService.getCompletedPartiesWithCharacters(raidId);
     return ResponseEntity.ok(completedParties);
   }
+
+  // ✅ 파티 완료 취소
+  @DeleteMapping("/complete/{partyCompletionId}")
+  public ResponseEntity<String> cancelPartyCompletion(@PathVariable Long partyCompletionId) {
+    partyMatchingService.cancelPartyCompletion(partyCompletionId);
+    return ResponseEntity.ok("파티 완료가 취소되었습니다.");
+  }
 }

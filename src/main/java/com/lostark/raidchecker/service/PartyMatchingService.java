@@ -309,4 +309,15 @@ public class PartyMatchingService {
       return result;
     }).collect(Collectors.toList());
   }
+
+  /**
+   * 파티 완료 취소
+   */
+  @Transactional
+  public void cancelPartyCompletion(Long partyCompletionId) {
+    PartyCompletion partyCompletion = partyCompletionRepository.findById(partyCompletionId)
+            .orElseThrow(() -> new RuntimeException("완료 기록을 찾을 수 없습니다."));
+
+    partyCompletionRepository.delete(partyCompletion);
+  }
 }
