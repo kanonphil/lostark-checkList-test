@@ -12,6 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
             .allowedOrigins(
                     "http://localhost:5173",
                     "https://lostark-checker.onrender.com",
+                    "https://raid-check.onrender.com",
                     "https://*.onrender.com"
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE")
