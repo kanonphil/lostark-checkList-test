@@ -1,5 +1,6 @@
 package com.lostark.raidchecker.entity;
 
+import com.lostark.raidchecker.util.WeeklyResetUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,13 +35,6 @@ public class PartyCompletion {
   @PrePersist
   public void prePersist() {
     this.completedAt = LocalDateTime.now();
-    this.weekStart = calculateWeekStart();
-  }
-
-  private LocalDateTime calculateWeekStart() {
-    LocalDateTime now = LocalDateTime.now();
-    int dayOfWeek = now.getDayOfWeek().getValue();
-    int daysToSubtract = (dayOfWeek + 2) % 7;
-    return now.minusDays(daysToSubtract).toLocalDate().atStartOfDay();
+    this.weekStart = WeeklyResetUtil.getCurrentWeekStart(); // ✅ 수요일 오전 6시
   }
 }
