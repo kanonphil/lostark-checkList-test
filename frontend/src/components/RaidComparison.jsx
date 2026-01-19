@@ -55,7 +55,7 @@ function RaidComparison({ currentUserId }) {
               {/* ✅ 첫 번째 열 고정 */}
               <th style={{
                 padding: '15px',
-                textAlign: 'left',
+                textAlign: 'center',
                 borderBottom: '2px solid #ddd',
                 position: 'sticky',
                 left: 0,
