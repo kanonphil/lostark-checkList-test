@@ -15,9 +15,14 @@ function PartyMatching() {
   // 완료된 파티 상태 추가
   const [completedParties, setCompletedParties] = useState([])
   const [showCompletedParties, setShowCompletedParties] = useState(false)
+  
+  // ✅ 전체 완료된 파티 (메인 화면용)
+  const [allCompletedParties, setAllCompletedParties] = useState([])
+  const [showAllCompletedParties, setShowAllCompletedParties] = useState(false)
 
   useEffect(() => {
     loadRaids();
+    loadAllCompletedParties(); // ✅ 전체 완료된 파티 로드
   }, [])
 
   const loadRaids = async () => {
@@ -26,6 +31,34 @@ function PartyMatching() {
       setRaids(response.data)
     } catch (error) {
       console.error('레이드 로딩 실패:', error)
+    }
+  }
+
+  // ✅ 모든 레이드의 완료된 파티 로드
+  const loadAllCompletedParties = async () => {
+    try {
+      const response = await api.get('/raids')
+      const allRaids = response.data
+      
+      const partiesPromises = allRaids.map(async (raid) => {
+        try {
+          const completedResponse = await api.get(`/party/completed/${raid.id}`)
+          return completedResponse.data.map(party => ({
+            ...party,
+            raid: raid // 레이드 정보 포함
+          }))
+        } catch (error) {
+          console.error('로딩 실패:', error)
+          return ([])
+        }
+      })
+      
+      const partiesArrays = await Promise.all(partiesPromises)
+      const allParties = partiesArrays.flat()
+      
+      setAllCompletedParties(allParties)
+    } catch (error) {
+      console.error('전체 완료된 파티 로딩 실패:', error)
     }
   }
 
@@ -135,6 +168,7 @@ function PartyMatching() {
       handleRaidSelect(selectedRaid)
       setSelectedCharacters([])
       setManualParty(null)
+      loadAllCompletedParties() // ✅ 전체 완료된 파티도 새로고침
     } catch (error) {
       alert(error.response?.data || '완료 처리 실패')
     } finally {
@@ -142,9 +176,9 @@ function PartyMatching() {
     }
   }
 
-  // ✅ 취소 함수 추가
-  const cancelPartyCompletion = async (partyId, index) => {
-    if (!confirm(`파티 ${index + 1}의 완료를 취소하시겠습니까?`)) {
+  // ✅ 파티 완료 취소
+  const cancelPartyCompletion = async (partyId, raidName, difficulty, index) => {
+    if (!confirm(`${raidName} - ${difficulty} 파티 ${index + 1}의 완료를 취소하시겠습니까?`)) {
       return;
     }
   
@@ -153,7 +187,10 @@ function PartyMatching() {
       alert('파티 완료가 취소되었습니다!');
       
       // 새로고침
-      handleRaidSelect(selectedRaid);
+      if (selectedRaid) {
+        handleRaidSelect(selectedRaid);
+      }
+      loadAllCompletedParties(); // ✅ 전체 완료된 파티도 새로고침
     } catch (error) {
       alert(error.response?.data || '취소 실패');
     }
@@ -172,9 +209,124 @@ function PartyMatching() {
     return '';
   }
 
+  // ✅ 레이드별로 완료된 파티 그룹화
+  const groupedCompletedParties = allCompletedParties.reduce((acc, party) => {
+    const key = `${party.raid.raidName}-${party.raid.difficulty}`;
+    if (!acc[key]) {
+      acc[key] = {
+        raid: party.raid,
+        parties: []
+      };
+    }
+    acc[key].parties.push(party);
+    return acc;
+  }, {});
+
   return (
     <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
       <h2 style={{ marginBottom: '20px' }}>파티 매칭</h2>
+
+      {/* ✅ 전체 완료된 파티 (메인 화면) */}
+      {!selectedRaid && allCompletedParties.length > 0 && (
+        <div style={{ marginBottom: '30px' }}>
+          <button
+            onClick={() => setShowAllCompletedParties(!showAllCompletedParties)}
+            style={{
+              width: '100%',
+              padding: '15px',
+              backgroundColor: '#f5f5f5',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <span>완료된 파티 (총 {allCompletedParties.length}개)</span>
+            <span>{showAllCompletedParties ? '▲' : '▼'}</span>
+          </button>
+
+          {showAllCompletedParties && (
+            <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {Object.entries(groupedCompletedParties).map(([key, { raid, parties }]) => (
+                <div key={key}>
+                  <h3 style={{ 
+                    margin: '0 0 10px 0', 
+                    padding: '10px', 
+                    backgroundColor: '#e3f2fd', 
+                    borderRadius: '5px',
+                    fontSize: '16px'
+                  }}>
+                    {raid.raidName} - {raid.difficulty} ({parties.length}개 파티)
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {parties.map((party, index) => (
+                      <div
+                        key={party.id}
+                        style={{
+                          backgroundColor: 'white',
+                          padding: '20px',
+                          borderRadius: '10px',
+                          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                          border: '2px solid #4CAF50',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                          <h4 style={{ margin: 0 }}>파티 {index + 1}</h4>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: '#666' }}>
+                              {new Date(party.completedAt).toLocaleString('ko-KR')}
+                            </span>
+                            <button
+                              onClick={() => cancelPartyCompletion(party.id, raid.raidName, raid.difficulty, index)}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#f44336',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontSize: '13px',
+                              }}
+                            >
+                              취소
+                            </button>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          {party.characters.map(char => (
+                            <div
+                              key={char.id}
+                              style={{
+                                padding: '10px 12px',
+                                backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
+                                borderRadius: '5px',
+                                minWidth: '150px',
+                                textAlign: 'left',
+                              }}
+                            >
+                              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                                {char.characterName}
+                              </div>
+                              <div style={{ fontSize: '13px', color: '#666' }}>
+                                {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 레이드 선택 */}
       <div style={{ marginBottom: '30px' }}>
@@ -215,7 +367,7 @@ function PartyMatching() {
 
       {!loading && selectedRaid && availableCharacters && (
         <>
-          {/* 완료된 파티 목록 (접기 / 펼치기) */}
+          {/* 완료된 파티 목록 (선택된 레이드용) */}
           {completedParties.length > 0 && (
             <div style={{ marginBottom: '30px' }}>
               <button
@@ -258,7 +410,7 @@ function PartyMatching() {
                             {new Date(party.completedAt).toLocaleString('ko-KR')}
                           </span>
                           <button
-                            onClick={() => cancelPartyCompletion(party.id, index)}
+                            onClick={() => cancelPartyCompletion(party.id, selectedRaid.raidName, selectedRaid.difficulty, index)}
                             style={{
                               padding: '6px 12px',
                               backgroundColor: '#f44336',
