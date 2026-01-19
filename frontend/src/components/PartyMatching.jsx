@@ -147,25 +147,38 @@ function PartyMatching() {
       setCompleting(true);
       const characterIds = [...party.dealers, ...party.supports].map(c => c.id);
 
-      await api.post('/party/complete', {
+      console.log('파티 완료 요청:', {
         raidId: selectedRaid.id,
         characterIds,
-        extraRwward: false,
+        extraReward: false
       });
 
-      alert('파티 완료 처리되었습니다!');
+      const response = await api.post('/party/complete', {
+        raidId: selectedRaid.id,
+        characterIds,
+        extraReward: false,
+      });
+
+      console.log('파티 완료 응답:', response.data);
 
       // 상태 초기화
       setSelectedCharacters([]);
       setManualParty(null);
       
-      // 데이터 새로고침
-      loadAllCompletedParties();
+      // 데이터 새로고침 - await 추가!
+      await loadAllCompletedParties();
+      
       const availableResponse = await api.get(`/party/available/${selectedRaid.id}`);
+      console.log('사용 가능 캐릭터:', availableResponse.data);
       setAvailableCharacters(availableResponse.data);
+      
       const recommendResponse = await api.get(`/party/recommend/${selectedRaid.id}`);
+      console.log('추천 파티:', recommendResponse.data);
       setPartyRecommendations(recommendResponse.data);
+
+      alert('파티 완료 처리되었습니다!');
     } catch (error) {
+      console.error('파티 완료 처리 실패:', error);
       alert(error.response?.data || '완료 처리 실패');
     } finally {
       setCompleting(false);
