@@ -3,7 +3,11 @@ import api from "../services/api";
 
 function PartyMatching() {
   const [raids, setRaids] = useState([]);
-  const [selectedRaid, setSelectedRaid] = useState(null)
+  const [groupedRaids, setGroupedRaids] = useState({});
+  const [selectedRaidGroup, setSelectedRaidGroup] = useState(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState(null);
+  const [selectedRaid, setSelectedRaid] = useState(null);
+  
   const [availableCharacters, setAvailableCharacters] = useState(null)
   const [partyRecommendations, setPartyRecommendations] = useState([])
   const [loading, setLoading] = useState(false)
@@ -12,11 +16,9 @@ function PartyMatching() {
   const [manualParty, setManualParty] = useState(null)
   const [completing, setCompleting] = useState(false)
 
-  // 완료된 파티 상태 추가
   const [completedParties, setCompletedParties] = useState([])
   const [showCompletedParties, setShowCompletedParties] = useState(false)
   
-  // ✅ 전체 완료된 파티 (메인 화면용)
   const [allCompletedParties, setAllCompletedParties] = useState([])
   const [showAllCompletedParties, setShowAllCompletedParties] = useState(false)
 
@@ -28,13 +30,32 @@ function PartyMatching() {
   const loadRaids = async () => {
     try {
       const response = await api.get('/raids')
-      setRaids(response.data)
+      const allRaids = response.data
+      setRaids(allRaids)
+      
+      // ✅ 레이드 그룹별로 묶기
+      const grouped = allRaids.reduce((acc, raid) => {
+        if (!acc[raid.raidGroup]) {
+          acc[raid.raidGroup] = []
+        }
+        acc[raid.raidGroup].push(raid)
+        return acc
+      }, {})
+      
+      // ✅ 각 그룹 내에서 난이도 순서 정렬 (노말 -> 하드 -> 나이트메어)
+      const difficultyOrder = { '노말': 1, '하드': 2, '나이트메어': 3 }
+      Object.keys(grouped).forEach(group => {
+        grouped[group].sort((a, b) => {
+          return (difficultyOrder[a.difficulty] || 999) - (difficultyOrder[b.difficulty] || 999)
+        })
+      })
+      
+      setGroupedRaids(grouped)
     } catch (error) {
       console.error('레이드 로딩 실패:', error)
     }
   }
 
-  // ✅ 모든 레이드의 완료된 파티 로드
   const loadAllCompletedParties = async () => {
     try {
       const response = await api.get('/raids')
@@ -48,7 +69,7 @@ function PartyMatching() {
             raid: raid
           }))
         } catch (error) {
-          console.error('로딩 실패:', error);
+          console.error('loading failed:', error);
           return []
         }
       })
@@ -62,6 +83,24 @@ function PartyMatching() {
     }
   }
 
+  // ✅ 레이드 그룹 선택
+  const handleRaidGroupSelect = (raidGroup) => {
+    setSelectedRaidGroup(raidGroup)
+    // 첫 번째 난이도를 자동 선택
+    const firstRaid = groupedRaids[raidGroup][0]
+    setSelectedDifficulty(firstRaid.difficulty)
+    handleRaidSelect(firstRaid)
+  }
+
+  // ✅ 난이도 선택
+  const handleDifficultySelect = (difficulty) => {
+    setSelectedDifficulty(difficulty)
+    const raid = groupedRaids[selectedRaidGroup].find(r => r.difficulty === difficulty)
+    if (raid) {
+      handleRaidSelect(raid)
+    }
+  }
+
   const handleRaidSelect = async (raid) => {
     setSelectedRaid(raid)
     setSelectedCharacters([])
@@ -69,15 +108,12 @@ function PartyMatching() {
     setLoading(true)
 
     try {
-      // 가능한 캐릭터 목록 조회
       const availableResponse = await api.get(`/party/available/${raid.id}`)
       setAvailableCharacters(availableResponse.data)
 
-      // 파티 추천 조회
       const recommendResponse = await api.get(`/party/recommend/${raid.id}`)
       setPartyRecommendations(recommendResponse.data)
 
-      // 완료된 파티 조회
       try {
         const completedResponse = await api.get(`/party/completed/${raid.id}`)
         setCompletedParties(completedResponse.data)
@@ -92,7 +128,6 @@ function PartyMatching() {
     }
   }
 
-  // 캐릭터 선택 토글
   const toggleCharacterSelection = (character) => {
     setSelectedCharacters(prev => {
       const isSelected = prev.find(c => c.id === character.id)
@@ -104,14 +139,12 @@ function PartyMatching() {
     })
   }
 
-  // 수동 파티 구성
   const createManualParty = () => {
     if (selectedCharacters.length === 0) {
       alert('캐릭터를 선택해주세요')
       return;
     }
 
-    // 같은 유저 체크
     const userIds = selectedCharacters.map(c => c.userId);
     const uniqueUserIds = new Set(userIds.filter(id => id != null))
 
@@ -135,7 +168,6 @@ function PartyMatching() {
     setManualParty(party);
   }
 
-  // 파티 완료 처리
   const completeParty = async (party) => {
     if (!confirm('선택한 캐릭터들의 레이드를 완료 처리하시겠습니까?')) {
       return;
@@ -153,7 +185,6 @@ function PartyMatching() {
 
       alert('파티 완료 처리되었습니다!')
 
-      // 새로고침
       handleRaidSelect(selectedRaid)
       setSelectedCharacters([])
       setManualParty(null)
@@ -165,7 +196,6 @@ function PartyMatching() {
     }
   }
 
-  // ✅ 파티 완료 취소
   const cancelPartyCompletion = async (partyId, raidName, difficulty, index) => {
     if (!confirm(`${raidName} - ${difficulty} 파티 ${index + 1}의 완료를 취소하시겠습니까?`)) {
       return;
@@ -175,7 +205,6 @@ function PartyMatching() {
       await api.delete(`/party/complete/${partyId}`);
       alert('파티 완료가 취소되었습니다!');
       
-      // 새로고침
       if (selectedRaid) {
         handleRaidSelect(selectedRaid);
       }
@@ -198,7 +227,6 @@ function PartyMatching() {
     return '';
   }
 
-  // ✅ 레이드별로 완료된 파티 그룹화
   const groupedCompletedParties = allCompletedParties.reduce((acc, party) => {
     const key = `${party.raid.raidName}-${party.raid.difficulty}`;
     if (!acc[key]) {
@@ -213,7 +241,7 @@ function PartyMatching() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto' }}>
-      {/* ✅ 상단 고정 타이틀 */}
+      {/* 상단 고정 타이틀 */}
       <div style={{ 
         position: 'sticky', 
         top: 0, 
@@ -226,37 +254,76 @@ function PartyMatching() {
         <h2 style={{ margin: 0 }}>파티 매칭</h2>
       </div>
 
-      {/* ✅ 2-column 레이아웃 */}
+      {/* 2-column 레이아웃 */}
       <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '20px', alignItems: 'start' }}>
         
-        {/* ========== 왼쪽 컬럼: 레이드 선택 + 완료된 파티 ========== */}
+        {/* ========== 왼쪽 컬럼 ========== */}
         <div style={{ position: 'sticky', top: '80px' }}>
           
-          {/* 레이드 선택 */}
+          {/* ✅ 레이드 그룹 선택 */}
           <div style={{ marginBottom: '20px' }}>
             <h3 style={{ marginBottom: '15px' }}>레이드 선택</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {raids.map(raid => (
-                <button
-                  key={raid.id}
-                  onClick={() => handleRaidSelect(raid)}
-                  style={{
-                    padding: '12px 15px',
-                    backgroundColor: selectedRaid?.id === raid.id ? '#4CAF50' : 'white',
-                    color: selectedRaid?.id === raid.id ? 'white' : 'black',
-                    border: '2px solid #ddd',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{raid.raidName}</div>
-                  <div style={{ fontSize: '11px', color: selectedRaid?.id === raid.id ? '#e8f5e9' : '#666' }}>
-                    {raid.difficulty} · 레벨 {raid.requiredItemLevel} · {getPartyTypeLabel(raid)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {Object.entries(groupedRaids).map(([raidGroup, raidsInGroup]) => {
+                const isSelected = selectedRaidGroup === raidGroup
+                const firstRaid = raidsInGroup[0]
+                
+                return (
+                  <div key={raidGroup}>
+                    {/* 레이드 그룹 버튼 */}
+                    <button
+                      onClick={() => handleRaidGroupSelect(raidGroup)}
+                      style={{
+                        width: '100%',
+                        padding: '12px 15px',
+                        backgroundColor: isSelected ? '#4CAF50' : 'white',
+                        color: isSelected ? 'white' : 'black',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{raidGroup}</div>
+                      <div style={{ fontSize: '11px', color: isSelected ? '#e8f5e9' : '#666' }}>
+                        레벨 {firstRaid.requiredItemLevel} · {getPartyTypeLabel(firstRaid)}
+                      </div>
+                    </button>
+
+                    {/* ✅ 난이도 선택 (선택된 그룹만 표시) */}
+                    {isSelected && (
+                      <div style={{ 
+                        marginTop: '8px', 
+                        marginLeft: '10px',
+                        display: 'flex', 
+                        gap: '6px',
+                        flexWrap: 'wrap'
+                      }}>
+                        {raidsInGroup.map(raid => (
+                          <button
+                            key={raid.id}
+                            onClick={() => handleDifficultySelect(raid.difficulty)}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: selectedDifficulty === raid.difficulty ? '#2196F3' : 'white',
+                              color: selectedDifficulty === raid.difficulty ? 'white' : 'black',
+                              border: '1px solid #ddd',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: selectedDifficulty === raid.difficulty ? 'bold' : 'normal',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {raid.difficulty}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </button>
-              ))}
+                )
+              })}
             </div>
           </div>
 
@@ -361,7 +428,7 @@ function PartyMatching() {
           )}
         </div>
 
-        {/* ========== 오른쪽 컬럼: 선택한 레이드 상세 ========== */}
+        {/* ========== 오른쪽 컬럼 ========== */}
         <div>
           {!selectedRaid && (
             <div style={{
@@ -372,7 +439,7 @@ function PartyMatching() {
               color: '#999',
               fontSize: '18px'
             }}>
-              왼쪽에서 레이드를 선택해주세요
+              왼쪽에서 레이드와 난이도를 선택해주세요
             </div>
           )}
 
@@ -400,7 +467,7 @@ function PartyMatching() {
                 </div>
               </div>
 
-              {/* 완료된 파티 목록 (선택된 레이드용) */}
+              {/* 완료된 파티 목록 */}
               {completedParties.length > 0 && (
                 <div style={{ marginBottom: '20px' }}>
                   <button
@@ -571,7 +638,6 @@ function PartyMatching() {
                   </div>
                 </div>
 
-                {/* 선택한 캐릭터로 파티 구성 버튼 */}
                 <div style={{ marginTop: '15px' }}>
                   <button
                     onClick={createManualParty}
@@ -593,7 +659,7 @@ function PartyMatching() {
                 </div>
               </div>
 
-              {/* 구성된 수동 파티 표시 */}
+              {/* 구성된 파티 */}
               {manualParty && (
                 <div style={{ marginBottom: '20px' }}>
                   <h3 style={{ marginBottom: '10px' }}>구성된 파티</h3>
@@ -661,7 +727,6 @@ function PartyMatching() {
                       </div>
                     </div>
 
-                    {/* 완료 처리 버튼 */}
                     <button
                       onClick={() => completeParty(manualParty)}
                       disabled={completing}
@@ -719,7 +784,6 @@ function PartyMatching() {
                         </h4>
                         
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                          {/* 딜러 */}
                           <div>
                             <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#f44336', fontSize: '13px' }}>
                               딜러 ({party.dealerCount}명)
@@ -745,7 +809,6 @@ function PartyMatching() {
                             ))}
                           </div>
 
-                          {/* 서폿 */}
                           <div>
                             <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2196F3', fontSize: '13px' }}>
                               서폿 ({party.supportCount}명)
@@ -772,7 +835,6 @@ function PartyMatching() {
                           </div>
                         </div>
 
-                        {/* 추천 파티도 완료 처리 가능 */}
                         <button
                           onClick={() => completeParty(party)}
                           disabled={completing}
