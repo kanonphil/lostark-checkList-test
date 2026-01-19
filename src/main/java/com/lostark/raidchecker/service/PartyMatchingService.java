@@ -68,7 +68,12 @@ public class PartyMatchingService {
                 return false;
               }
 
-              // 개인 체크리스트 완료 여부는 체크 안 함
+              // ✅ 같은 레이드 그룹의 다른 난이도를 개인 체크리스트에서 완료했는지 체크
+              if (completionService.isRaidGroupCompleted(character.getId(), raid.getRaidGroup())) {
+                return false;
+              }
+
+              // 파티 매칭 가능
               return true;
             })
             .sorted(Comparator

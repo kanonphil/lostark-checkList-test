@@ -163,7 +163,7 @@ public class WeeklyCompletionService {
   }
 
   // ✅ 레이드 그룹이 이미 완료되었는지 확인 (관문 1개라도 완료 시 true)
-  private boolean isRaidGroupCompleted(Long characterId, String raidGroup) {
+  public boolean isRaidGroupCompleted(Long characterId, String raidGroup) {
     LocalDateTime weekStart = WeeklyResetUtil.getCurrentWeekStart();
 
     List<WeeklyCompletion> completions = weeklyCompletionRepository
