@@ -22,7 +22,7 @@ function PartyMatching() {
 
   useEffect(() => {
     loadRaids();
-    loadAllCompletedParties(); // ✅ 전체 완료된 파티 로드
+    loadAllCompletedParties();
   }, [])
 
   const loadRaids = async () => {
@@ -45,11 +45,11 @@ function PartyMatching() {
           const completedResponse = await api.get(`/party/completed/${raid.id}`)
           return completedResponse.data.map(party => ({
             ...party,
-            raid: raid // 레이드 정보 포함
+            raid: raid
           }))
         } catch (error) {
-          console.error('로딩 실패:', error)
-          return ([])
+          console.error('로딩 실패:', error);
+          return []
         }
       })
       
@@ -63,17 +63,6 @@ function PartyMatching() {
   }
 
   const handleRaidSelect = async (raid) => {
-    // ✅ 같은 레이드를 다시 클릭하면 선택 취소
-    if (selectedRaid?.id === raid.id) {
-      setSelectedRaid(null)
-      setAvailableCharacters(null)
-      setPartyRecommendations([])
-      setCompletedParties([])
-      setSelectedCharacters([])
-      setManualParty(null)
-      return
-    }
-
     setSelectedRaid(raid)
     setSelectedCharacters([])
     setManualParty(null)
@@ -168,7 +157,7 @@ function PartyMatching() {
       handleRaidSelect(selectedRaid)
       setSelectedCharacters([])
       setManualParty(null)
-      loadAllCompletedParties() // ✅ 전체 완료된 파티도 새로고침
+      loadAllCompletedParties()
     } catch (error) {
       alert(error.response?.data || '완료 처리 실패')
     } finally {
@@ -190,7 +179,7 @@ function PartyMatching() {
       if (selectedRaid) {
         handleRaidSelect(selectedRaid);
       }
-      loadAllCompletedParties(); // ✅ 전체 완료된 파티도 새로고침
+      loadAllCompletedParties();
     } catch (error) {
       alert(error.response?.data || '취소 실패');
     }
@@ -223,491 +212,422 @@ function PartyMatching() {
   }, {});
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
-      <h2 style={{ marginBottom: '20px' }}>파티 매칭</h2>
+    <div style={{ padding: '20px', maxWidth: '1600px', margin: '0 auto' }}>
+      {/* ✅ 상단 고정 타이틀 */}
+      <div style={{ 
+        position: 'sticky', 
+        top: 0, 
+        backgroundColor: 'white', 
+        zIndex: 100, 
+        paddingBottom: '20px',
+        borderBottom: '2px solid #ddd',
+        marginBottom: '20px'
+      }}>
+        <h2 style={{ margin: 0 }}>파티 매칭</h2>
+      </div>
 
-      {/* ✅ 전체 완료된 파티 (메인 화면) */}
-      {!selectedRaid && allCompletedParties.length > 0 && (
-        <div style={{ marginBottom: '30px' }}>
-          <button
-            onClick={() => setShowAllCompletedParties(!showAllCompletedParties)}
-            style={{
-              width: '100%',
-              padding: '15px',
-              backgroundColor: '#f5f5f5',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <span>완료된 파티 (총 {allCompletedParties.length}개)</span>
-            <span>{showAllCompletedParties ? '▲' : '▼'}</span>
-          </button>
+      {/* ✅ 2-column 레이아웃 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '20px', alignItems: 'start' }}>
+        
+        {/* ========== 왼쪽 컬럼: 레이드 선택 + 완료된 파티 ========== */}
+        <div style={{ position: 'sticky', top: '80px' }}>
+          
+          {/* 레이드 선택 */}
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ marginBottom: '15px' }}>레이드 선택</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {raids.map(raid => (
+                <button
+                  key={raid.id}
+                  onClick={() => handleRaidSelect(raid)}
+                  style={{
+                    padding: '12px 15px',
+                    backgroundColor: selectedRaid?.id === raid.id ? '#4CAF50' : 'white',
+                    color: selectedRaid?.id === raid.id ? 'white' : 'black',
+                    border: '2px solid #ddd',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{raid.raidName}</div>
+                  <div style={{ fontSize: '11px', color: selectedRaid?.id === raid.id ? '#e8f5e9' : '#666' }}>
+                    {raid.difficulty} · 레벨 {raid.requiredItemLevel} · {getPartyTypeLabel(raid)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
 
-          {showAllCompletedParties && (
-            <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {Object.entries(groupedCompletedParties).map(([key, { raid, parties }]) => (
-                <div key={key}>
-                  <h3 style={{ 
-                    margin: '0 0 10px 0', 
-                    padding: '10px', 
-                    backgroundColor: '#e3f2fd', 
-                    borderRadius: '5px',
-                    fontSize: '16px'
-                  }}>
-                    {raid.raidName} - {raid.difficulty} ({parties.length}개 파티)
-                  </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {parties.map((party, index) => (
-                      <div
-                        key={party.id}
-                        style={{
-                          backgroundColor: 'white',
-                          padding: '20px',
-                          borderRadius: '10px',
-                          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                          border: '2px solid #4CAF50',
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                          <h4 style={{ margin: 0 }}>파티 {index + 1}</h4>
-                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <span style={{ fontSize: '13px', color: '#666' }}>
-                              {new Date(party.completedAt).toLocaleString('ko-KR')}
-                            </span>
+          {/* 전체 완료된 파티 */}
+          {allCompletedParties.length > 0 && (
+            <div>
+              <button
+                onClick={() => setShowAllCompletedParties(!showAllCompletedParties)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                <span>완료된 파티 ({allCompletedParties.length}개)</span>
+                <span>{showAllCompletedParties ? '▲' : '▼'}</span>
+              </button>
+
+              {showAllCompletedParties && (
+                <div style={{ 
+                  maxHeight: '500px', 
+                  overflowY: 'auto',
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '15px',
+                  padding: '10px',
+                  backgroundColor: '#fafafa',
+                  borderRadius: '8px'
+                }}>
+                  {Object.entries(groupedCompletedParties).map(([key, { raid, parties }]) => (
+                    <div key={key}>
+                      <div style={{ 
+                        padding: '8px', 
+                        backgroundColor: '#e3f2fd', 
+                        borderRadius: '5px',
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        marginBottom: '8px'
+                      }}>
+                        {raid.raidName} - {raid.difficulty} ({parties.length}개)
+                      </div>
+                      {parties.map((party, index) => (
+                        <div
+                          key={party.id}
+                          style={{
+                            backgroundColor: 'white',
+                            padding: '10px',
+                            borderRadius: '5px',
+                            border: '1px solid #4CAF50',
+                            marginBottom: '8px',
+                            fontSize: '12px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 'bold' }}>파티 {index + 1}</span>
                             <button
                               onClick={() => cancelPartyCompletion(party.id, raid.raidName, raid.difficulty, index)}
                               style={{
-                                padding: '6px 12px',
+                                padding: '3px 8px',
                                 backgroundColor: '#f44336',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '5px',
+                                borderRadius: '3px',
                                 cursor: 'pointer',
-                                fontSize: '13px',
+                                fontSize: '11px',
                               }}
                             >
                               취소
                             </button>
                           </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                          {party.characters.map(char => (
-                            <div
-                              key={char.id}
-                              style={{
-                                padding: '10px 12px',
-                                backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
-                                borderRadius: '5px',
-                                minWidth: '150px',
-                                textAlign: 'left',
-                              }}
-                            >
-                              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                            {party.characters.map(char => (
+                              <div
+                                key={char.id}
+                                style={{
+                                  padding: '4px 8px',
+                                  backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
+                                  borderRadius: '3px',
+                                  fontSize: '11px',
+                                }}
+                              >
                                 {char.characterName}
                               </div>
-                              <div style={{ fontSize: '13px', color: '#666' }}>
-                                {char.className} · Lv.{char.itemLevel.toFixed(2)}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 레이드 선택 */}
-      <div style={{ marginBottom: '30px' }}>
-        <h3 style={{ marginBottom: '15px' }}>레이드 선택 {selectedRaid && <span style={{fontSize: '14px', color: '#666'}}>(다시 클릭하면 취소)</span>}</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
-          {raids.map(raid => (
-            <button
-              key={raid.id}
-              onClick={() => handleRaidSelect(raid)}
-              style={{
-                padding: '15px',
-                backgroundColor: selectedRaid?.id === raid.id ? '#4CAF50' : 'white',
-                color: selectedRaid?.id === raid.id ? 'white' : 'black',
-                border: '2px solid #ddd',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                textAlign: 'left',
-                transition: 'all 0.2s',
-              }}
-            >
-              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{raid.raidName}</div>
-              <div style={{ fontSize: '12px', color: selectedRaid?.id === raid.id ? '#e8f5e9' : '#666' }}>
-                {raid.difficulty} · 레벨 {raid.requiredItemLevel}
-              </div>
-              <div style={{ fontSize: '11px', marginTop: '5px', color: selectedRaid?.id === raid.id ? '#e8f5e9' : '#999' }}>
-                {getPartyTypeLabel(raid)}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          로딩 중...
-        </div>
-      )}
-
-      {!loading && selectedRaid && availableCharacters && (
-        <>
-          {/* 완료된 파티 목록 (선택된 레이드용) */}
-          {completedParties.length > 0 && (
-            <div style={{ marginBottom: '30px' }}>
-              <button
-                onClick={() => setShowCompletedParties(!showCompletedParties)}
-                style={{
-                  width: '100%',
-                  padding: '15px',
-                  backgroundColor: '#f5f5f5',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <span>완료된 파티 ({completedParties.length}개)</span>
-                <span>{showCompletedParties ? '▲' : '▼'}</span>
-              </button>
-
-              {showCompletedParties && (
-                <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  {completedParties.map((party, index) => (
-                    <div
-                      key={party.id}
-                      style={{
-                        backgroundColor: 'white',
-                        padding: '20px',
-                        borderRadius: '10px',
-                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                        border: '2px solid #4CAF50',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h4 style={{ margin: 0 }}>파티 {index + 1}</h4>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: '#666' }}>
-                            {new Date(party.completedAt).toLocaleString('ko-KR')}
-                          </span>
-                          <button
-                            onClick={() => cancelPartyCompletion(party.id, selectedRaid.raidName, selectedRaid.difficulty, index)}
-                            style={{
-                              padding: '6px 12px',
-                              backgroundColor: '#f44336',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '5px',
-                              cursor: 'pointer',
-                              fontSize: '13px',
-                            }}
-                          >
-                            취소
-                          </button>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        {party.characters.map(char => (
-                          <div
-                            key={char.id}
-                            style={{
-                              padding: '10px 12px',
-                              backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
-                              borderRadius: '5px',
-                              minWidth: '150px',
-                              textAlign: 'left',
-                            }}
-                          >
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                              {char.characterName}
-                            </div>
-                            <div style={{ fontSize: '13px', color: '#666' }}>
-                              {char.className} · Lv.{char.itemLevel.toFixed(2)}
-                            </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
               )}
             </div>
           )}
+        </div>
 
-          {/* 가능한 캐릭터 목록 */}
-          <div style={{ marginBottom: '30px' }}>
-            <h3 style={{ marginBottom: '15px' }}>
-              파티 구성 가능 캐릭터 (총 {availableCharacters.totalAvailable}명)
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              {/* 딜러 */}
-              <div>
-                <h4 style={{ marginBottom: '10px', color: '#f44336' }}>
-                  딜러 ({availableCharacters.dealers.length}명)
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {availableCharacters.dealers.map(char => {
-                    const isSelected = selectedCharacters.find(c => c.id === char.id);
-                    return (
-                      <div
-                        key={char.id}
-                        onClick={() => toggleCharacterSelection(char)}
-                        style={{
-                          padding: '12px',
-                          backgroundColor: isSelected ? '#ffcdd2' : '#ffebee',
-                          border: isSelected ? '2px solid #f44336' : '1px solid #ddd',
-                          borderRadius: '5px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        <div style={{ textAlign: 'left' }}>
-                          <div style={{ fontWeight: 'bold' }}>{char.characterName}</div>
-                          <div style={{ fontSize: '13px', color: '#666' }}>
-                            {char.className} · Lv.{char.itemLevel.toFixed(2)}
-                          </div>
-                        </div>
-                        {isSelected && (
-                          <span style={{ color: '#f44336', fontWeight: 'bold' }}>✓</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 서폿 */}
-              <div>
-                <h4 style={{ marginBottom: '10px', color: '#2196F3' }}>
-                  서폿 ({availableCharacters.supports.length}명)
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {availableCharacters.supports.map(char => {
-                    const isSelected = selectedCharacters.find(c => c.id === char.id);
-                    return (
-                      <div
-                        key={char.id}
-                        onClick={() => toggleCharacterSelection(char)}
-                        style={{
-                          padding: '12px',
-                          backgroundColor: isSelected ? '#bbdefb' : '#e3f2fd',
-                          border: isSelected ? '2px solid #2196F3' : '1px solid #ddd',
-                          borderRadius: '5px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        <div style={{ textAlign: 'left' }}>
-                          <div style={{ fontWeight: 'bold' }}>{char.characterName}</div>
-                          <div style={{ fontSize: '13px', color: '#666' }}>
-                            {char.className} · Lv.{char.itemLevel.toFixed(2)}
-                          </div>
-                        </div>
-                        {isSelected && (
-                          <span style={{ color: '#2196F3', fontWeight: 'bold' }}>✓</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+        {/* ========== 오른쪽 컬럼: 선택한 레이드 상세 ========== */}
+        <div>
+          {!selectedRaid && (
+            <div style={{
+              backgroundColor: '#f5f5f5',
+              padding: '60px',
+              borderRadius: '10px',
+              textAlign: 'center',
+              color: '#999',
+              fontSize: '18px'
+            }}>
+              왼쪽에서 레이드를 선택해주세요
             </div>
+          )}
 
-            {/* 선택한 캐릭터로 파티 구성 버튼 */}
-            <div style={{ marginTop: '20px' }}>
-              <button
-                onClick={createManualParty}
-                disabled={selectedCharacters.length === 0}
-                style={{
-                  width: '100%',
-                  padding: '15px',
-                  backgroundColor: selectedCharacters.length === 0 ? '#ccc' : '#FF9800',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: selectedCharacters.length === 0 ? 'not-allowed' : 'pointer',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                }}
-              >
-                선택한 캐릭터로 파티 구성 ({selectedCharacters.length}명)
-              </button>
+          {loading && (
+            <div style={{ textAlign: 'center', padding: '60px', color: '#666', fontSize: '18px' }}>
+              로딩 중...
             </div>
-          </div>
+          )}
 
-          {/* ✅ 구성된 수동 파티 표시 */}
-          {manualParty && (
-            <div style={{ marginBottom: '30px' }}>
-              <h3 style={{ marginBottom: '15px' }}>구성된 파티</h3>
-              <div style={{
-                backgroundColor: 'white',
-                padding: '20px',
-                borderRadius: '10px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          {!loading && selectedRaid && availableCharacters && (
+            <>
+              {/* 선택된 레이드 정보 */}
+              <div style={{ 
+                backgroundColor: '#e8f5e9', 
+                padding: '15px', 
+                borderRadius: '8px', 
+                marginBottom: '20px',
+                border: '2px solid #4CAF50'
               }}>
-                <div style={{ marginBottom: '15px', fontSize: '18px', fontWeight: 'bold' }}>
-                  파티 ({manualParty.total}명: 딜러 {manualParty.dealerCount} + 서폿 {manualParty.supportCount})
+                <h3 style={{ margin: '0 0 5px 0' }}>
+                  {selectedRaid.raidName} - {selectedRaid.difficulty}
+                </h3>
+                <div style={{ fontSize: '14px', color: '#666' }}>
+                  레벨 {selectedRaid.requiredItemLevel} · {getPartyTypeLabel(selectedRaid)}
                 </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+              </div>
+
+              {/* 완료된 파티 목록 (선택된 레이드용) */}
+              {completedParties.length > 0 && (
+                <div style={{ marginBottom: '20px' }}>
+                  <button
+                    onClick={() => setShowCompletedParties(!showCompletedParties)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: '#f5f5f5',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span>이 레이드의 완료된 파티 ({completedParties.length}개)</span>
+                    <span>{showCompletedParties ? '▲' : '▼'}</span>
+                  </button>
+
+                  {showCompletedParties && (
+                    <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {completedParties.map((party, index) => (
+                        <div
+                          key={party.id}
+                          style={{
+                            backgroundColor: 'white',
+                            padding: '15px',
+                            borderRadius: '8px',
+                            border: '2px solid #4CAF50',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <h4 style={{ margin: 0 }}>파티 {index + 1}</h4>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '12px', color: '#666' }}>
+                                {new Date(party.completedAt).toLocaleString('ko-KR')}
+                              </span>
+                              <button
+                                onClick={() => cancelPartyCompletion(party.id, selectedRaid.raidName, selectedRaid.difficulty, index)}
+                                style={{
+                                  padding: '5px 10px',
+                                  backgroundColor: '#f44336',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                }}
+                              >
+                                취소
+                              </button>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {party.characters.map(char => (
+                              <div
+                                key={char.id}
+                                style={{
+                                  padding: '8px 10px',
+                                  backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
+                                  borderRadius: '5px',
+                                  textAlign: 'left',
+                                }}
+                              >
+                                <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '3px' }}>
+                                  {char.characterName}
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#666' }}>
+                                  {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 가능한 캐릭터 목록 */}
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ marginBottom: '10px' }}>
+                  파티 구성 가능 캐릭터 (총 {availableCharacters.totalAvailable}명)
+                </h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                   {/* 딜러 */}
                   <div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#f44336' }}>
-                      딜러 ({manualParty.dealerCount}명)
+                    <h4 style={{ marginBottom: '8px', color: '#f44336', fontSize: '14px' }}>
+                      딜러 ({availableCharacters.dealers.length}명)
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {availableCharacters.dealers.map(char => {
+                        const isSelected = selectedCharacters.find(c => c.id === char.id);
+                        return (
+                          <div
+                            key={char.id}
+                            onClick={() => toggleCharacterSelection(char)}
+                            style={{
+                              padding: '10px',
+                              backgroundColor: isSelected ? '#ffcdd2' : '#ffebee',
+                              border: isSelected ? '2px solid #f44336' : '1px solid #ddd',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            <div style={{ textAlign: 'left' }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '13px' }}>{char.characterName}</div>
+                              <div style={{ fontSize: '11px', color: '#666' }}>
+                                {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <span style={{ color: '#f44336', fontWeight: 'bold' }}>✓</span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {manualParty.dealers.map(char => (
-                      <div
-                        key={char.id}
-                        style={{
-                          padding: '10px 12px',
-                          backgroundColor: '#ffebee',
-                          borderRadius: '5px',
-                          marginBottom: '5px',
-                          textAlign: 'left',
-                        }}
-                      >
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                          {char.characterName}
-                        </div>
-                        <div style={{ fontSize: '13px', color: '#666' }}>
-                          {char.className} · Lv.{char.itemLevel.toFixed(2)}
-                        </div>
-                      </div>
-                    ))}
                   </div>
 
                   {/* 서폿 */}
                   <div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#2196F3' }}>
-                      서폿 ({manualParty.supportCount}명)
+                    <h4 style={{ marginBottom: '8px', color: '#2196F3', fontSize: '14px' }}>
+                      서폿 ({availableCharacters.supports.length}명)
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {availableCharacters.supports.map(char => {
+                        const isSelected = selectedCharacters.find(c => c.id === char.id);
+                        return (
+                          <div
+                            key={char.id}
+                            onClick={() => toggleCharacterSelection(char)}
+                            style={{
+                              padding: '10px',
+                              backgroundColor: isSelected ? '#bbdefb' : '#e3f2fd',
+                              border: isSelected ? '2px solid #2196F3' : '1px solid #ddd',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            <div style={{ textAlign: 'left' }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '13px' }}>{char.characterName}</div>
+                              <div style={{ fontSize: '11px', color: '#666' }}>
+                                {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <span style={{ color: '#2196F3', fontWeight: 'bold' }}>✓</span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {manualParty.supports.map(char => (
-                      <div
-                        key={char.id}
-                        style={{
-                          padding: '10px 12px',
-                          backgroundColor: '#e3f2fd',
-                          borderRadius: '5px',
-                          marginBottom: '5px',
-                          textAlign: 'left',
-                        }}
-                      >
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                          {char.characterName}
-                        </div>
-                        <div style={{ fontSize: '13px', color: '#666' }}>
-                          {char.className} · Lv.{char.itemLevel.toFixed(2)}
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
 
-                {/* 완료 처리 버튼 */}
-                <button
-                  onClick={() => completeParty(manualParty)}
-                  disabled={completing}
-                  style={{
-                    width: '100%',
-                    padding: '15px',
-                    backgroundColor: completing ? '#ccc' : '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: completing ? 'not-allowed' : 'pointer',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {completing ? '처리 중...' : '파티 완료 처리'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* 추천 파티 (기존) */}
-          <div>
-            <h3 style={{ marginBottom: '15px' }}>추천 파티 구성</h3>
-            
-            {partyRecommendations.length === 0 ? (
-              <div style={{
-                backgroundColor: 'white',
-                padding: '40px',
-                borderRadius: '10px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                textAlign: 'center',
-                color: '#999',
-              }}>
-                파티를 구성할 수 없습니다.
-                <br />
-                {selectedRaid.partyType === '카제로스' 
-                  ? '(딜러 6명, 서폿 2명 필요)'
-                  : '(딜러 3명, 서폿 1명 필요)'}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {partyRecommendations.map((party, index) => (
-                  <div
-                    key={index}
+                {/* 선택한 캐릭터로 파티 구성 버튼 */}
+                <div style={{ marginTop: '15px' }}>
+                  <button
+                    onClick={createManualParty}
+                    disabled={selectedCharacters.length === 0}
                     style={{
-                      backgroundColor: 'white',
-                      padding: '20px',
-                      borderRadius: '10px',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: selectedCharacters.length === 0 ? '#ccc' : '#FF9800',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: selectedCharacters.length === 0 ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
                     }}
                   >
-                    <h4 style={{ marginBottom: '15px' }}>
-                      추천 파티 {index + 1} ({party.type} - {party.partySize}인)
-                    </h4>
+                    선택한 캐릭터로 파티 구성 ({selectedCharacters.length}명)
+                  </button>
+                </div>
+              </div>
+
+              {/* 구성된 수동 파티 표시 */}
+              {manualParty && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ marginBottom: '10px' }}>구성된 파티</h3>
+                  <div style={{
+                    backgroundColor: 'white',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    border: '2px solid #FF9800',
+                  }}>
+                    <div style={{ marginBottom: '10px', fontSize: '16px', fontWeight: 'bold' }}>
+                      파티 ({manualParty.total}명: 딜러 {manualParty.dealerCount} + 서폿 {manualParty.supportCount})
+                    </div>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
                       {/* 딜러 */}
                       <div>
-                        <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#f44336' }}>
-                          딜러 ({party.dealerCount}명)
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#f44336', fontSize: '13px' }}>
+                          딜러 ({manualParty.dealerCount}명)
                         </div>
-                        {party.dealers.map(char => (
+                        {manualParty.dealers.map(char => (
                           <div
                             key={char.id}
                             style={{
-                              padding: '10px 12px',
+                              padding: '8px 10px',
                               backgroundColor: '#ffebee',
                               borderRadius: '5px',
                               marginBottom: '5px',
                               textAlign: 'left',
                             }}
                           >
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '3px', fontSize: '13px' }}>
                               {char.characterName}
                             </div>
-                            <div style={{ fontSize: '13px', color: '#666' }}>
+                            <div style={{ fontSize: '11px', color: '#666' }}>
                               {char.className} · Lv.{char.itemLevel.toFixed(2)}
                             </div>
                           </div>
@@ -716,24 +636,24 @@ function PartyMatching() {
 
                       {/* 서폿 */}
                       <div>
-                        <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#2196F3' }}>
-                          서폿 ({party.supportCount}명)
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2196F3', fontSize: '13px' }}>
+                          서폿 ({manualParty.supportCount}명)
                         </div>
-                        {party.supports.map(char => (
+                        {manualParty.supports.map(char => (
                           <div
                             key={char.id}
                             style={{
-                              padding: '10px 12px',
+                              padding: '8px 10px',
                               backgroundColor: '#e3f2fd',
                               borderRadius: '5px',
                               marginBottom: '5px',
                               textAlign: 'left',
                             }}
                           >
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '3px', fontSize: '13px' }}>
                               {char.characterName}
                             </div>
-                            <div style={{ fontSize: '13px', color: '#666' }}>
+                            <div style={{ fontSize: '11px', color: '#666' }}>
                               {char.className} · Lv.{char.itemLevel.toFixed(2)}
                             </div>
                           </div>
@@ -741,9 +661,9 @@ function PartyMatching() {
                       </div>
                     </div>
 
-                    {/* ✅ 추천 파티도 완료 처리 가능 */}
+                    {/* 완료 처리 버튼 */}
                     <button
-                      onClick={() => completeParty(party)}
+                      onClick={() => completeParty(manualParty)}
                       disabled={completing}
                       style={{
                         width: '100%',
@@ -757,15 +677,128 @@ function PartyMatching() {
                         fontWeight: 'bold',
                       }}
                     >
-                      {completing ? '처리 중...' : '이 파티로 완료 처리'}
+                      {completing ? '처리 중...' : '파티 완료 처리'}
                     </button>
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* 추천 파티 */}
+              <div>
+                <h3 style={{ marginBottom: '10px' }}>추천 파티 구성</h3>
+                
+                {partyRecommendations.length === 0 ? (
+                  <div style={{
+                    backgroundColor: 'white',
+                    padding: '30px',
+                    borderRadius: '8px',
+                    border: '1px solid #ddd',
+                    textAlign: 'center',
+                    color: '#999',
+                  }}>
+                    파티를 구성할 수 없습니다.
+                    <br />
+                    {selectedRaid.partyType === '카제로스' 
+                      ? '(딜러 6명, 서폿 2명 필요)'
+                      : '(딜러 3명, 서폿 1명 필요)'}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {partyRecommendations.map((party, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          backgroundColor: 'white',
+                          padding: '15px',
+                          borderRadius: '8px',
+                          border: '1px solid #ddd',
+                        }}
+                      >
+                        <h4 style={{ marginBottom: '10px', fontSize: '14px' }}>
+                          추천 파티 {index + 1} ({party.type} - {party.partySize}인)
+                        </h4>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                          {/* 딜러 */}
+                          <div>
+                            <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#f44336', fontSize: '13px' }}>
+                              딜러 ({party.dealerCount}명)
+                            </div>
+                            {party.dealers.map(char => (
+                              <div
+                                key={char.id}
+                                style={{
+                                  padding: '8px 10px',
+                                  backgroundColor: '#ffebee',
+                                  borderRadius: '5px',
+                                  marginBottom: '5px',
+                                  textAlign: 'left',
+                                }}
+                              >
+                                <div style={{ fontWeight: 'bold', marginBottom: '3px', fontSize: '13px' }}>
+                                  {char.characterName}
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#666' }}>
+                                  {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* 서폿 */}
+                          <div>
+                            <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2196F3', fontSize: '13px' }}>
+                              서폿 ({party.supportCount}명)
+                            </div>
+                            {party.supports.map(char => (
+                              <div
+                                key={char.id}
+                                style={{
+                                  padding: '8px 10px',
+                                  backgroundColor: '#e3f2fd',
+                                  borderRadius: '5px',
+                                  marginBottom: '5px',
+                                  textAlign: 'left',
+                                }}
+                              >
+                                <div style={{ fontWeight: 'bold', marginBottom: '3px', fontSize: '13px' }}>
+                                  {char.characterName}
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#666' }}>
+                                  {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 추천 파티도 완료 처리 가능 */}
+                        <button
+                          onClick={() => completeParty(party)}
+                          disabled={completing}
+                          style={{
+                            width: '100%',
+                            padding: '10px',
+                            backgroundColor: completing ? '#ccc' : '#4CAF50',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: completing ? 'not-allowed' : 'pointer',
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {completing ? '처리 중...' : '이 파티로 완료 처리'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </>
-      )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
