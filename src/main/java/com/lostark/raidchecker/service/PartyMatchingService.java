@@ -7,6 +7,7 @@ import com.lostark.raidchecker.entity.Raid;
 import com.lostark.raidchecker.repository.CharacterRepository;
 import com.lostark.raidchecker.repository.PartyCompletionRepository;
 import com.lostark.raidchecker.repository.RaidRepository;
+import com.lostark.raidchecker.util.WeeklyResetUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,27 +47,19 @@ public class PartyMatchingService {
 
     List<Character> allCharacters = characterRepository.findAll();
 
-    // ✅ 같은 레이드 그룹의 모든 레이드 찾기 (예: 세르카 노말, 하드, 나이트메어)
-    List<Raid> sameGroupRaids = raidRepository.findAll().stream()
-            .filter(r -> r.getRaidGroup().equals(raid.getRaidGroup()))
-            .collect(Collectors.toList());
-
-    // ✅ 같은 레이드 그룹의 모든 레이드에서 완료된 파티의 캐릭터 ID 수집
-    Set<Long> completedCharacterIds = new HashSet<>();
-    for (Raid groupRaid : sameGroupRaids) {
-      List<PartyCompletion> completedParties = getCompletedParties(groupRaid.getId());
-      completedParties.stream()
-              .flatMap(party -> {
-                String[] ids = party.getCharacterIds().split(",");
-                return Arrays.stream(ids).map(Long::parseLong);
-              })
-              .forEach(completedCharacterIds::add);
-    }
+    // 이번 주 완료된 파티의 캐릭터 ID 수집
+    List<PartyCompletion> completedParties = getCompletedParties(raidId);
+    Set<Long> completedCharacterIds = completedParties.stream()
+            .flatMap(party -> {
+              String[] ids = party.getCharacterIds().split(",");
+              return Arrays.stream(ids).map(Long::parseLong);
+            })
+            .collect(Collectors.toSet());
 
     // 미완료 캐릭터 필터링
     List<Character> availableCharacters = allCharacters.stream()
             .filter(character -> {
-              // 파티 완료된 캐릭터 제외 (같은 레이드 그룹의 모든 난이도 포함)
+              // 파티 완료된 캐릭터 제외
               if (completedCharacterIds.contains(character.getId())) {
                 return false;
               }
@@ -76,11 +69,7 @@ public class PartyMatchingService {
                 return false;
               }
 
-              // ✅ 같은 레이드 그룹의 다른 난이도를 개인 체크리스트에서 완료했는지 체크
-              if (completionService.isRaidGroupCompleted(character.getId(), raid.getRaidGroup())) {
-                return false;
-              }
-
+              // 개인 체크리스트 완료 여부는 체크 안 함
               return true;
             })
             .sorted(Comparator
@@ -291,16 +280,10 @@ public class PartyMatchingService {
    * 특정 레이드의 이번 주 완료된 파티 목록
    */
   public List<PartyCompletion> getCompletedParties(Long raidId) {
-    LocalDateTime weekStart = calculateWeekStart();
+    LocalDateTime weekStart = WeeklyResetUtil.getCurrentWeekStart();
     return partyCompletionRepository.findByRaid_IdAndWeekStart(raidId, weekStart);
   }
 
-  private LocalDateTime calculateWeekStart() {
-    LocalDateTime now = LocalDateTime.now();
-    int dayOfWeek = now.getDayOfWeek().getValue();
-    int daysToSubtract = (dayOfWeek + 2) % 7;
-    return now.minusDays(daysToSubtract).toLocalDate().atStartOfDay();
-  }
 
   /**
    * 완료된 파티 목록 (캐릭터 정보 포함)
