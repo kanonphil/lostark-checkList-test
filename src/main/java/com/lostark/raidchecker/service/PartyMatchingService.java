@@ -8,13 +8,13 @@ import com.lostark.raidchecker.repository.CharacterRepository;
 import com.lostark.raidchecker.repository.PartyCompletionRepository;
 import com.lostark.raidchecker.repository.RaidRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -122,9 +122,12 @@ public class PartyMatchingService {
     @SuppressWarnings("unchecked")
     List<Character> supports = (List<Character>) available.get("supports");
 
+    // ✅ 랜덤 섞기
+    Collections.shuffle(dealers);
+    Collections.shuffle(supports);
+
     List<Map<String, Object>> recommendations = new ArrayList<>();
 
-    // ✅ 사용된 유저 ID 추적
     Set<Long> usedUserIds = new HashSet<>();
     List<Character> selectedDealers = new ArrayList<>();
     List<Character> selectedSupports = new ArrayList<>();
@@ -174,9 +177,11 @@ public class PartyMatchingService {
     @SuppressWarnings("unchecked")
     List<Character> supports = (List<Character>) available.get("supports");
 
-    List<Map<String, Object>> recommendations = new ArrayList<>();
+    // ✅ 랜덤 섞기
+    Collections.shuffle(dealers);
+    Collections.shuffle(supports);
 
-    // ✅ 여러 파티 생성 가능
+    List<Map<String, Object>> recommendations = new ArrayList<>();
     Set<Long> globalUsedUserIds = new HashSet<>();
 
     while (true) {
