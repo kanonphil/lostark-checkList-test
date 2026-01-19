@@ -333,7 +333,7 @@ function PartyMatching() {
                           transition: 'all 0.2s',
                         }}
                       >
-                        <div>
+                        <div style={{ textAlign: 'left' }}>
                           <div style={{ fontWeight: 'bold' }}>{char.characterName}</div>
                           <div style={{ fontSize: '13px', color: '#666' }}>
                             {char.className} · Lv.{char.itemLevel.toFixed(2)}
@@ -372,7 +372,7 @@ function PartyMatching() {
                           transition: 'all 0.2s',
                         }}
                       >
-                        <div>
+                        <div style={{ textAlign: 'left' }}>
                           <div style={{ fontWeight: 'bold' }}>{char.characterName}</div>
                           <div style={{ fontSize: '13px', color: '#666' }}>
                             {char.className} · Lv.{char.itemLevel.toFixed(2)}
