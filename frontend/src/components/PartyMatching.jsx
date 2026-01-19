@@ -784,7 +784,11 @@ function PartyMatching() {
                               </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <div style={{ 
+                              display: 'grid', 
+                              gridTemplateColumns: 'repeat(4, 1fr)', 
+                              gap: '10px' 
+                            }}>
                               {party.characters.map(char => (
                                 <div
                                   key={char.id}
@@ -792,7 +796,6 @@ function PartyMatching() {
                                     padding: '10px 12px',
                                     backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
                                     borderRadius: '8px',
-                                    minWidth: '140px',
                                     textAlign: 'left',
                                   }}
                                 >
