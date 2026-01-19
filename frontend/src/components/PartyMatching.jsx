@@ -283,6 +283,7 @@ function PartyMatching() {
                               backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
                               borderRadius: '5px',
                               minWidth: '150px',
+                              textAlign: 'left',
                             }}
                           >
                             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
@@ -437,6 +438,7 @@ function PartyMatching() {
                           backgroundColor: '#ffebee',
                           borderRadius: '5px',
                           marginBottom: '5px',
+                          textAlign: 'left',
                         }}
                       >
                         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
@@ -462,6 +464,7 @@ function PartyMatching() {
                           backgroundColor: '#e3f2fd',
                           borderRadius: '5px',
                           marginBottom: '5px',
+                          textAlign: 'left',
                         }}
                       >
                         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
@@ -546,6 +549,7 @@ function PartyMatching() {
                               backgroundColor: '#ffebee',
                               borderRadius: '5px',
                               marginBottom: '5px',
+                              textAlign: 'left',
                             }}
                           >
                             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
@@ -571,6 +575,7 @@ function PartyMatching() {
                               backgroundColor: '#e3f2fd',
                               borderRadius: '5px',
                               marginBottom: '5px',
+                              textAlign: 'left',
                             }}
                           >
                             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
