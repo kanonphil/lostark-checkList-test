@@ -765,7 +765,15 @@ function PartyMatching() {
                               <h5 style={{ margin: 0 }}>파티 {index + 1}</h5>
                               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                 <span style={{ fontSize: '13px', color: '#666' }}>
-                                  {new Date(party.completedAt).toLocaleString('ko-KR')}
+                                  {new Date(party.completedAt).toLocaleString('ko-KR', { 
+                                    timeZone: 'Asia/Seoul',
+                                    year: 'numeric',
+                                    month: 'numeric',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                  })}
                                 </span>
                                 <button
                                   onClick={() => cancelPartyCompletion(party.id, raidGroup, difficulty)}
