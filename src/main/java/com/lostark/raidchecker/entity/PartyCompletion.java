@@ -34,7 +34,8 @@ public class PartyCompletion {
 
   @PrePersist
   public void prePersist() {
-    this.completedAt = LocalDateTime.now();
-    this.weekStart = WeeklyResetUtil.getCurrentWeekStart(); // ✅ 수요일 오전 6시
+    // WeeklyResetUtil의 한국 시간 사용
+    this.completedAt = WeeklyResetUtil.getCurrentKoreanTime();
+    this.weekStart = WeeklyResetUtil.getCurrentWeekStart();
   }
 }
