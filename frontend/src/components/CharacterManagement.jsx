@@ -137,11 +137,11 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
           >
             {/* 캐릭터 정보 */}
             <div>
-              <h4 style={{margin: '0 0 5px 0'}}>{char.characterName}</h4>
-              <p style={{margin: '5px 0', color: '#666', fontSize: '14px'}}>
+              <h4 style={{margin: '0 0 5px 0', textAlign: 'left'}}>{char.characterName}</h4>
+              <p style={{margin: '5px 0', color: '#666', fontSize: '14px', textAlign: 'left'}}>
                 {char.className} | 레벨: {char.itemLevel} | 서버: {char.serverName}
               </p>
-              <p style={{margin: '5px 0', fontSize: '14px'}}>
+              <p style={{margin: '5px 0', fontSize: '14px', textAlign: 'left'}}>
                 골드 우선순위: <strong>{char.goldPriority}</strong>
                 {char.goldPriority <= 6 ? ' (골드 획득)' : ' (골드 미획득)'}
               </p>
