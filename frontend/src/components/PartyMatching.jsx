@@ -279,13 +279,18 @@ function PartyMatching() {
                           <div
                             key={char.id}
                             style={{
-                              padding: '8px 12px',
+                              padding: '10px 12px',
                               backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
                               borderRadius: '5px',
-                              fontSize: '14px',
+                              minWidth: '150px',
                             }}
                           >
-                            {char.characterName} ({char.className})
+                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                              {char.characterName}
+                            </div>
+                            <div style={{ fontSize: '13px', color: '#666' }}>
+                              {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -428,20 +433,18 @@ function PartyMatching() {
                       <div
                         key={char.id}
                         style={{
-                          padding: '8px 12px',
+                          padding: '10px 12px',
                           backgroundColor: '#ffebee',
                           borderRadius: '5px',
                           marginBottom: '5px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
                         }}
                       >
-                        <span>
-                          {char.characterName} ({char.className})
-                        </span>
-                        <span style={{ fontSize: '13px', color: '#666' }}>
-                          Lv.{char.itemLevel.toFixed(2)}
-                        </span>
+                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                          {char.characterName}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#666' }}>
+                          {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -455,20 +458,18 @@ function PartyMatching() {
                       <div
                         key={char.id}
                         style={{
-                          padding: '8px 12px',
+                          padding: '10px 12px',
                           backgroundColor: '#e3f2fd',
                           borderRadius: '5px',
                           marginBottom: '5px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
                         }}
                       >
-                        <span>
-                          {char.characterName} ({char.className})
-                        </span>
-                        <span style={{ fontSize: '13px', color: '#666' }}>
-                          Lv.{char.itemLevel.toFixed(2)}
-                        </span>
+                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                          {char.characterName}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#666' }}>
+                          {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -541,20 +542,18 @@ function PartyMatching() {
                           <div
                             key={char.id}
                             style={{
-                              padding: '8px 12px',
+                              padding: '10px 12px',
                               backgroundColor: '#ffebee',
                               borderRadius: '5px',
                               marginBottom: '5px',
-                              display: 'flex',
-                              justifyContent: 'space-between',
                             }}
                           >
-                            <span>
-                              {char.characterName} ({char.className})
-                            </span>
-                            <span style={{ fontSize: '13px', color: '#666' }}>
-                              Lv.{char.itemLevel.toFixed(2)}
-                            </span>
+                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                              {char.characterName}
+                            </div>
+                            <div style={{ fontSize: '13px', color: '#666' }}>
+                              {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -568,20 +567,18 @@ function PartyMatching() {
                           <div
                             key={char.id}
                             style={{
-                              padding: '8px 12px',
+                              padding: '10px 12px',
                               backgroundColor: '#e3f2fd',
                               borderRadius: '5px',
                               marginBottom: '5px',
-                              display: 'flex',
-                              justifyContent: 'space-between',
                             }}
                           >
-                            <span>
-                              {char.characterName} ({char.className})
-                            </span>
-                            <span style={{ fontSize: '13px', color: '#666' }}>
-                              Lv.{char.itemLevel.toFixed(2)}
-                            </span>
+                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                              {char.characterName}
+                            </div>
+                            <div style={{ fontSize: '13px', color: '#666' }}>
+                              {char.className} · Lv.{char.itemLevel.toFixed(2)}
+                            </div>
                           </div>
                         ))}
                       </div>
