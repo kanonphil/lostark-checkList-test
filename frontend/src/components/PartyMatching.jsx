@@ -287,6 +287,9 @@ function PartyMatching() {
           <h3 style={{ marginBottom: '20px' }}>레이드를 선택하세요</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
             {Object.entries(groupedRaids).map(([raidGroup, raidsInGroup]) => {
+              const minLevel = Math.min(...raidsInGroup.map(r => r.requiredItemLevel));
+              const maxLevel = Math.max(...raidsInGroup.map(r => r.requiredItemLevel));
+              const levelRange = minLevel === maxLevel ? `레벨 ${minLevel}` : `레벨 ${minLevel}~${maxLevel}`;
               const firstRaid = raidsInGroup[0];
               
               return (
@@ -303,7 +306,7 @@ function PartyMatching() {
                 >
                   <h4 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>{raidGroup}</h4>
                   <div style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
-                    레벨 {firstRaid.requiredItemLevel} · {getPartyTypeLabel(firstRaid)}
+                    {levelRange} · {getPartyTypeLabel(firstRaid)}
                   </div>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -320,20 +323,30 @@ function PartyMatching() {
                           fontSize: '14px',
                           fontWeight: '500',
                           transition: 'all 0.2s',
-                          textAlign: 'left'
+                          textAlign: 'left',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = '#4CAF50';
                           e.currentTarget.style.color = 'white';
                           e.currentTarget.style.borderColor = '#4CAF50';
+                          const levelSpan = e.currentTarget.querySelector('span:last-child');
+                          if (levelSpan) levelSpan.style.color = 'rgba(255, 255, 255, 0.8)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = '#f5f5f5';
                           e.currentTarget.style.color = 'black';
                           e.currentTarget.style.borderColor = '#ddd';
+                          const levelSpan = e.currentTarget.querySelector('span:last-child');
+                          if (levelSpan) levelSpan.style.color = '#999';
                         }}
                       >
-                        {raid.difficulty}
+                        <span>{raid.difficulty}</span>
+                        <span style={{ fontSize: '12px', color: '#999', transition: 'color 0.2s' }}>
+                          레벨 {raid.requiredItemLevel}
+                        </span>
                       </button>
                     ))}
                   </div>
