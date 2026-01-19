@@ -30,6 +30,17 @@ function PartyMatching() {
   }
 
   const handleRaidSelect = async (raid) => {
+    // ✅ 같은 레이드를 다시 클릭하면 선택 취소
+    if (selectedRaid?.id === raid.id) {
+      setSelectedRaid(null)
+      setAvailableCharacters(null)
+      setPartyRecommendations([])
+      setCompletedParties([])
+      setSelectedCharacters([])
+      setManualParty(null)
+      return
+    }
+
     setSelectedRaid(raid)
     setSelectedCharacters([])
     setManualParty(null)
@@ -54,7 +65,6 @@ function PartyMatching() {
       }
     } catch (error) {
       console.error('파티 매칭 실패:', error)
-      // alert('파티 매칭에 실패했습니다.')
     } finally {
       setLoading(false)
     }
@@ -168,7 +178,7 @@ function PartyMatching() {
 
       {/* 레이드 선택 */}
       <div style={{ marginBottom: '30px' }}>
-        <h3 style={{ marginBottom: '15px' }}>레이드 선택</h3>
+        <h3 style={{ marginBottom: '15px' }}>레이드 선택 {selectedRaid && <span style={{fontSize: '14px', color: '#666'}}>(다시 클릭하면 취소)</span>}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
           {raids.map(raid => (
             <button
@@ -229,59 +239,39 @@ function PartyMatching() {
               </button>
 
               {showCompletedParties && (
-                <div style={{
-                  marginTop: '15px', 
-                  padding: '20px', 
-                  backgroundColor: '#fafafa',
-                  borderRadius: '8px',
-                  border: '1px solid #e0e0e0'
-                }}>
+                <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {completedParties.map((party, index) => (
                     <div
                       key={party.id}
                       style={{
                         backgroundColor: 'white',
-                        padding: '15px',
-                        borderRadius: '8px',
-                        marginBottom: index < completedParties.length - 1 ? '10px' : '0',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        padding: '20px',
+                        borderRadius: '10px',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                        border: '2px solid #4CAF50',
                       }}
                     >
-                      <div style={{
-                        fontSize: '14px', 
-                        color: '#666', 
-                        marginBottom: '10px',
-                        display: 'flex',
-                        justifyContent: 'space-between'
-                      }}>
-                        <span>파티 {index + 1}</span>
-                        <span>
-                          {new Date(party.completedAt).toLocaleString('ko-KR', {
-                            timeZone: 'Asia/Seoul',
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
-                        {/* 취소 버튼 */}
-                        <button
-                        onClick={() => cancelPartyCompletion(party.id, index)}
-                        style={{
-                          padding: '4px 12px',
-                          backgroundColor: '#f44336',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f2f'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f44336'}
-                      >
-                        취소
-                      </button>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h4 style={{ margin: 0 }}>파티 {index + 1}</h4>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', color: '#666' }}>
+                            {new Date(party.completedAt).toLocaleString('ko-KR')}
+                          </span>
+                          <button
+                            onClick={() => cancelPartyCompletion(party.id, index)}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: '#f44336',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                            }}
+                          >
+                            취소
+                          </button>
+                        </div>
                       </div>
 
                       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -289,10 +279,10 @@ function PartyMatching() {
                           <div
                             key={char.id}
                             style={{
-                              padding: '6px 12px',
+                              padding: '8px 12px',
                               backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
                               borderRadius: '5px',
-                              fontSize: '13px',
+                              fontSize: '14px',
                             }}
                           >
                             {char.characterName} ({char.className})
@@ -305,128 +295,102 @@ function PartyMatching() {
               )}
             </div>
           )}
-          {/* ✅ 수동 파티 구성 */}
+
+          {/* 가능한 캐릭터 목록 */}
           <div style={{ marginBottom: '30px' }}>
-            <h3 style={{ marginBottom: '15px' }}>수동 파티 구성</h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+            <h3 style={{ marginBottom: '15px' }}>
+              파티 구성 가능 캐릭터 (총 {availableCharacters.totalAvailable}명)
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               {/* 딜러 */}
-              <div style={{
-                backgroundColor: 'white',
-                padding: '20px',
-                borderRadius: '10px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              }}>
-                <h4 style={{ marginBottom: '15px', color: '#f44336' }}>
+              <div>
+                <h4 style={{ marginBottom: '10px', color: '#f44336' }}>
                   딜러 ({availableCharacters.dealers.length}명)
                 </h4>
-                {availableCharacters.dealers.length === 0 ? (
-                  <div style={{ color: '#999', textAlign: 'center', padding: '20px' }}>
-                    가능한 딜러가 없습니다
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {availableCharacters.dealers.map(char => {
-                      const isSelected = selectedCharacters.find(c => c.id === char.id);
-                      return (
-                        <div
-                          key={char.id}
-                          onClick={() => toggleCharacterSelection(char)}
-                          style={{
-                            padding: '12px',
-                            backgroundColor: isSelected ? '#ffcdd2' : '#f5f5f5',
-                            borderRadius: '5px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                            border: isSelected ? '2px solid #f44336' : '2px solid transparent',
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={!!isSelected}
-                            onChange={() => {}}
-                            style={{ marginRight: '10px', cursor: 'pointer' }}
-                          />
-                          <div style={{ flex: 1 }}>
-                            <span style={{ fontWeight: 'bold' }}>{char.characterName}</span>
-                            <span style={{ marginLeft: '10px', color: '#666' }}>
-                              {char.className}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '14px', color: '#666' }}>
-                            Lv.{char.itemLevel.toFixed(2)}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {availableCharacters.dealers.map(char => {
+                    const isSelected = selectedCharacters.find(c => c.id === char.id);
+                    return (
+                      <div
+                        key={char.id}
+                        onClick={() => toggleCharacterSelection(char)}
+                        style={{
+                          padding: '12px',
+                          backgroundColor: isSelected ? '#ffcdd2' : '#ffebee',
+                          border: isSelected ? '2px solid #f44336' : '1px solid #ddd',
+                          borderRadius: '5px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 'bold' }}>{char.characterName}</div>
+                          <div style={{ fontSize: '13px', color: '#666' }}>
+                            {char.className} · Lv.{char.itemLevel.toFixed(2)}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        {isSelected && (
+                          <span style={{ color: '#f44336', fontWeight: 'bold' }}>✓</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 서폿 */}
-              <div style={{
-                backgroundColor: 'white',
-                padding: '20px',
-                borderRadius: '10px',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              }}>
-                <h4 style={{ marginBottom: '15px', color: '#2196F3' }}>
+              <div>
+                <h4 style={{ marginBottom: '10px', color: '#2196F3' }}>
                   서폿 ({availableCharacters.supports.length}명)
                 </h4>
-                {availableCharacters.supports.length === 0 ? (
-                  <div style={{ color: '#999', textAlign: 'center', padding: '20px' }}>
-                    가능한 서폿이 없습니다
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {availableCharacters.supports.map(char => {
-                      const isSelected = selectedCharacters.find(c => c.id === char.id);
-                      return (
-                        <div
-                          key={char.id}
-                          onClick={() => toggleCharacterSelection(char)}
-                          style={{
-                            padding: '12px',
-                            backgroundColor: isSelected ? '#bbdefb' : '#e3f2fd',
-                            borderRadius: '5px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                            border: isSelected ? '2px solid #2196F3' : '2px solid transparent',
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={!!isSelected}
-                            onChange={() => {}}
-                            style={{ marginRight: '10px', cursor: 'pointer' }}
-                          />
-                          <div style={{ flex: 1 }}>
-                            <span style={{ fontWeight: 'bold' }}>{char.characterName}</span>
-                            <span style={{ marginLeft: '10px', color: '#666' }}>
-                              {char.className}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '14px', color: '#666' }}>
-                            Lv.{char.itemLevel.toFixed(2)}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {availableCharacters.supports.map(char => {
+                    const isSelected = selectedCharacters.find(c => c.id === char.id);
+                    return (
+                      <div
+                        key={char.id}
+                        onClick={() => toggleCharacterSelection(char)}
+                        style={{
+                          padding: '12px',
+                          backgroundColor: isSelected ? '#bbdefb' : '#e3f2fd',
+                          border: isSelected ? '2px solid #2196F3' : '1px solid #ddd',
+                          borderRadius: '5px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 'bold' }}>{char.characterName}</div>
+                          <div style={{ fontSize: '13px', color: '#666' }}>
+                            {char.className} · Lv.{char.itemLevel.toFixed(2)}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        {isSelected && (
+                          <span style={{ color: '#2196F3', fontWeight: 'bold' }}>✓</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            {/* 파티 구성 버튼 */}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            {/* 선택한 캐릭터로 파티 구성 버튼 */}
+            <div style={{ marginTop: '20px' }}>
               <button
                 onClick={createManualParty}
                 disabled={selectedCharacters.length === 0}
                 style={{
-                  padding: '12px 24px',
-                  backgroundColor: selectedCharacters.length === 0 ? '#ccc' : '#2196F3',
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: selectedCharacters.length === 0 ? '#ccc' : '#FF9800',
                   color: 'white',
                   border: 'none',
                   borderRadius: '5px',
