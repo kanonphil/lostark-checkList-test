@@ -87,7 +87,7 @@ function PartyMatching() {
       
       setAllCompletedParties(allParties);
     } catch (error) {
-      console.error('전체 완료된 파티 로딩 실패:', error);
+      console.error('전체 완료된 공격대 로딩 실패:', error);
     }
   };
 
@@ -107,7 +107,7 @@ function PartyMatching() {
 
       setActiveTab('party');
     } catch (error) {
-      console.error('파티 매칭 실패:', error);
+      console.error('공격대 매칭 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -162,7 +162,7 @@ function PartyMatching() {
       setCompleting(true);
       const characterIds = [...party.dealers, ...party.supports].map(c => c.id);
 
-      console.log('파티 완료 요청:', {
+      console.log('공격대 완료 요청:', {
         raidId: selectedRaid.id,
         characterIds,
         extraReward: false
@@ -174,7 +174,7 @@ function PartyMatching() {
         extraReward: false,
       });
 
-      console.log('파티 완료 응답:', response.data);
+      console.log('공격대 완료 응답:', response.data);
 
       // 상태 초기화
       setSelectedCharacters([]);
@@ -188,12 +188,12 @@ function PartyMatching() {
       setAvailableCharacters(availableResponse.data);
       
       const recommendResponse = await api.get(`/party/recommend/${selectedRaid.id}`);
-      console.log('추천 파티:', recommendResponse.data);
+      console.log('추천 공격대:', recommendResponse.data);
       setPartyRecommendations(recommendResponse.data);
 
-      alert('파티 완료 처리되었습니다!');
+      alert('공격대 완료 처리되었습니다!');
     } catch (error) {
-      console.error('파티 완료 처리 실패:', error);
+      console.error('공격대 완료 처리 실패:', error);
       alert(error.response?.data || '완료 처리 실패');
     } finally {
       setCompleting(false);
@@ -201,13 +201,13 @@ function PartyMatching() {
   };
 
   const cancelPartyCompletion = async (partyId, raidName, difficulty) => {
-    if (!confirm(`${raidName} - ${difficulty} 파티의 완료를 취소하시겠습니까?`)) {
+    if (!confirm(`${raidName} - ${difficulty} 공격대의 완료를 취소하시겠습니까?`)) {
       return;
     }
   
     try {
       await api.delete(`/party/complete/${partyId}`);
-      alert('파티 완료가 취소되었습니다!');
+      alert('공격대 완료가 취소되었습니다!');
       
       loadAllCompletedParties();
       
@@ -258,7 +258,7 @@ function PartyMatching() {
         color: theme.text.primary,
         fontSize: isMobile ? '20px' : '24px'
       }}>
-        파티 매칭
+        공격대 편성
       </h2>
 
       {/* 탭 메뉴 */}
@@ -304,7 +304,7 @@ function PartyMatching() {
             transition: 'all 0.2s'
           }}
         >
-          {isMobile ? '파티' : `파티 구성 ${selectedRaid ? `(${selectedRaid.raidName} - ${selectedRaid.difficulty})` : ''}`}
+          {isMobile ? '공격대' : `공격대 구성 ${selectedRaid ? `(${selectedRaid.raidName} - ${selectedRaid.difficulty})` : ''}`}
         </button>
         <button
           onClick={() => setActiveTab('completed')}
@@ -426,7 +426,7 @@ function PartyMatching() {
         </div>
       )}
 
-      {/* 탭 2: 파티 구성 */}
+      {/* 탭 2: 공격대 구성 */}
       {activeTab === 'party' && (
         <div>
           {loading && (
@@ -473,7 +473,7 @@ function PartyMatching() {
                   color: theme.text.primary,
                   fontSize: isMobile ? '18px' : '20px'
                 }}>
-                  파티 구성 가능 캐릭터 (총 {availableCharacters.totalAvailable}명)
+                  공격대 구성 가능 캐릭터 (총 {availableCharacters.totalAvailable}명)
                 </h3>
 
                 <div style={{ 
@@ -610,12 +610,12 @@ function PartyMatching() {
                       fontWeight: 'bold',
                     }}
                   >
-                    선택한 캐릭터로 파티 구성 ({selectedCharacters.length}명)
+                    선택한 캐릭터로 공격대 구성 ({selectedCharacters.length}명)
                   </button>
                 </div>
               </div>
 
-              {/* 구성된 파티 */}
+              {/* 구성된 공격대 */}
               {manualParty && (
                 <div style={{ marginBottom: '30px' }}>
                   <h3 style={{ 
@@ -623,7 +623,7 @@ function PartyMatching() {
                     color: theme.text.primary,
                     fontSize: isMobile ? '18px' : '20px'
                   }}>
-                    구성된 파티
+                    구성된 공격대
                   </h3>
                   <div style={{
                     backgroundColor: theme.card.bg,
@@ -637,7 +637,7 @@ function PartyMatching() {
                       fontWeight: 'bold',
                       color: theme.text.primary
                     }}>
-                      파티 ({manualParty.total}명: 딜러 {manualParty.dealerCount} + 서폿 {manualParty.supportCount})
+                      공격대 ({manualParty.total}명: 딜러 {manualParty.dealerCount} + 서폿 {manualParty.supportCount})
                     </div>
                     
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
@@ -709,20 +709,20 @@ function PartyMatching() {
                         fontWeight: 'bold',
                       }}
                     >
-                      {completing ? '처리 중...' : '파티 완료 처리'}
+                      {completing ? '처리 중...' : '공격대 완료 처리'}
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* 추천 파티 */}
+              {/* 추천 공격대 */}
               <div>
                 <h3 style={{ 
                   marginBottom: '15px',
                   color: theme.text.primary,
                   fontSize: isMobile ? '18px' : '20px'
                 }}>
-                  추천 파티 구성
+                  추천 공격대 구성
                 </h3>
                 
                 {partyRecommendations.length === 0 ? (
@@ -734,7 +734,7 @@ function PartyMatching() {
                     textAlign: 'center',
                     color: theme.text.secondary,
                   }}>
-                    파티를 구성할 수 없습니다.
+                    공격대를 구성할 수 없습니다.
                     <br />
                     {selectedRaid.partyType === '카제로스' 
                       ? '(딜러 6명, 서폿 2명 필요)'
@@ -757,7 +757,7 @@ function PartyMatching() {
                           color: theme.text.primary,
                           fontSize: isMobile? '16px' : '18px'
                         }}>
-                          추천 파티 {index + 1} ({party.type} - {party.partySize}인)
+                          추천 공격대 {index + 1} ({party.type} - {party.partySize}인)
                         </h4>
                         
                         <div style={{ 
@@ -858,7 +858,7 @@ function PartyMatching() {
                             fontWeight: 'bold',
                           }}
                         >
-                          {completing ? '처리 중...' : '이 파티로 완료 처리'}
+                          {completing ? '처리 중...' : '이 공격대로 완료 처리'}
                         </button>
                       </div>
                     ))}
@@ -870,7 +870,7 @@ function PartyMatching() {
         </div>
       )}
 
-      {/* 탭 3: 완료된 파티 */}
+      {/* 탭 3: 완료된 공격대 */}
       {activeTab === 'completed' && (
         <div>
           <h3 style={{ 
@@ -878,7 +878,7 @@ function PartyMatching() {
             color: theme.text.primary,
             fontSize: isMobile ? '18px' : '20px'
           }}>
-            완료된 파티 목록
+            완료된 공격대 목록
           </h3>
           
           {allCompletedParties.length === 0 ? (
@@ -891,7 +891,7 @@ function PartyMatching() {
               color: theme.text.secondary,
               fontSize: isMobile ? '14px' : '16px'
             }}>
-              완료된 파티가 없습니다.
+              완료된 공격대가 없습니다.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
@@ -916,7 +916,7 @@ function PartyMatching() {
                         fontSize: isMobile ? '14px' : '15px',
                         color: theme.text.secondary
                       }}>
-                        {difficulty} ({parties.length}개 파티)
+                        {difficulty} ({parties.length}개 공격대)
                       </div>
                       
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -936,7 +936,7 @@ function PartyMatching() {
                                 color: theme.text.primary,
                                 fontSize: isMobile ? '14px' : '16px'
                               }}>
-                                파티 {index + 1}
+                                공격대 {index + 1}
                               </h5>
                               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                 <span style={{ 
