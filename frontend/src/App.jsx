@@ -164,7 +164,7 @@ function App() {
               borderRadius: '5px',
               cursor: 'pointer',
               fontSize: isMobile ? '13px' : '14px',
-              whiteSpace: 'nowrap',            
+              whiteSpace: 'nowrap',
             }}
           >
             {isMobile ? '캐릭터' : '내 캐릭터'}
@@ -174,22 +174,23 @@ function App() {
             disabled={!selectedCharacter}
             style={{
               padding: isMobile ? '8px 12px' : '10px 20px',
-              backgroundColor: activeTab === 'characters' ? '#4CAF50' : '#555',
+              backgroundColor: activeTab === 'checklist' ? '#4CAF50' : '#555',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
-              cursor: 'pointer',
+              cursor: selectedCharacter ? 'pointer' : 'not-allowed',
+              opacity: selectedCharacter ? 1 : 0.5,
               fontSize: isMobile ? '13px' : '14px',
               whiteSpace: 'nowrap',
             }}
           >
-            {isMobile ? '체크리스트' : '레이드 체크리스트'} {selectedCharacter && `(${selectedCharacter.characterName})`}
+            {isMobile ? '체크리스트' : `레이드 체크리스트 ${selectedCharacter ? `(${selectedCharacter.characterName})` : ''}`}
           </button>
           <button
             onClick={() => setActiveTab('comparison')}
             style={{
               padding: isMobile ? '8px 12px' : '10px 20px',
-              backgroundColor: activeTab === 'characters' ? '#4CAF50' : '#555',
+              backgroundColor: activeTab === 'comparison' ? '#4CAF50' : '#555',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
@@ -204,7 +205,7 @@ function App() {
             onClick={() => setActiveTab('management')}
             style={{
               padding: isMobile ? '8px 12px' : '10px 20px',
-              backgroundColor: activeTab === 'characters' ? '#4CAF50' : '#555',
+              backgroundColor: activeTab === 'mangement' ? '#4CAF50' : '#555',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
@@ -219,7 +220,7 @@ function App() {
             onClick={() => setActiveTab('party')}
             style={{
               padding: isMobile ? '8px 12px' : '10px 20px',
-              backgroundColor: activeTab === 'characters' ? '#4CAF50' : '#555',
+              backgroundColor: activeTab === 'party' ? '#4CAF50' : '#555',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
