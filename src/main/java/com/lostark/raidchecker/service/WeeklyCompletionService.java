@@ -99,19 +99,20 @@ public class WeeklyCompletionService {
     // ✅ 전체 완료된 레이드 그룹 개수 확인
     int totalCompletedRaidGroups = getTotalCompletedRaidGroups(character.getId());
 
-    // ✅ 이 레이드 그룹이 아직 완료되지 않았고, 이미 3개 그룹이 완료되었으면 에러
-    if (!isRaidGroupAlreadyCompleted && totalCompletedRaidGroups >= 3) {
-      throw new RuntimeException("이미 3회 골드를 획득했습니다. (다른 레이드를 선택할 수 없습니다)");
-    }
+    // ✅ 골드 획득 가능 여부 판단
+    boolean canEarnGold = isRaidGroupAlreadyCompleted || totalCompletedRaidGroups < 3;
 
     // 관문 완료 처리
     gateCompletion.setCompleted(true);
     gateCompletion.setExtraReward(extraReward);
 
-    // 골드 계산
-    int earnedGold = gateCompletion.getRaidGate().getRewardGold();
-    if (extraReward) {
-      earnedGold -= gateCompletion.getRaidGate().getExtraCost();
+    // ✅ 골드 계산 (3회 제한 시 0)
+    int earnedGold = 0;
+    if (canEarnGold) {
+      earnedGold = gateCompletion.getRaidGate().getRewardGold();
+      if (extraReward) {
+        earnedGold -= gateCompletion.getRaidGate().getExtraCost();
+      }
     }
     gateCompletion.setEarnedGold(earnedGold);
 
@@ -174,20 +175,6 @@ public class WeeklyCompletionService {
             .anyMatch(WeeklyCompletion::getCompleted);
   }
 
-  // ✅ 레이드 그룹에서 완료된 레이드 개수 조회 (크로스 클리어 고려)
-  private int getCompletedRaidsCountInGroup(Long characterId, String raidGroup) {
-    LocalDateTime weekStart = WeeklyResetUtil.getCurrentWeekStart();
-
-    List<WeeklyCompletion> completions = weeklyCompletionRepository
-            .findByCharacterIdAndWeekStart(characterId, weekStart);
-
-    // ✅ 해당 그룹에서 관문 1개라도 완료된 레이드 개수
-    return (int) completions.stream()
-            .filter(wc -> wc.getRaid().getRaidGroup().equals(raidGroup))
-            .filter(WeeklyCompletion::getCompleted)
-            .count();
-  }
-
   // 특정 캐릭터의 이번 주 총 골드 계산
   public Integer getTotalEarnedGold(Long characterId) {
     List<WeeklyCompletion> completions = getCurrentWeekCompletions(characterId);
@@ -209,32 +196,5 @@ public class WeeklyCompletionService {
             .map(wc -> wc.getRaid().getRaidGroup())
             .distinct()
             .count();
-  }
-
-  /**
-   * 특정 레이드 완료 여부 확인
-   */
-  public boolean isRaidCompleted(Long characterId, Long raidId) {
-    LocalDateTime weekStart = WeeklyResetUtil.getCurrentWeekStart();
-
-    // ✅ 이번 주 완료 기록 조회
-    List<WeeklyCompletion> completions = weeklyCompletionRepository
-            .findByCharacterIdAndWeekStart(characterId, weekStart);
-
-    // ✅ 해당 레이드의 완료 기록 찾기
-    Optional<WeeklyCompletion> raidCompletion = completions.stream()
-            .filter(wc -> wc.getRaid().getId().equals(raidId))
-            .findFirst();
-
-    if (raidCompletion.isEmpty()) {
-      return false;
-    }
-
-    // ✅ 관문 하나라도 완료되었으면 true
-    List<GateCompletion> gateCompletions = gateCompletionRepository
-            .findByWeeklyCompletionId(raidCompletion.get().getId());
-
-    return gateCompletions.stream()
-            .anyMatch(GateCompletion::getCompleted);
   }
 }
