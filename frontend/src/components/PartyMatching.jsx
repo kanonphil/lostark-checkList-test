@@ -394,14 +394,14 @@ function PartyMatching() {
                           color: theme.text.primary
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = theme.bg.secondary;
+                          e.currentTarget.style.backgroundColor = isDark ? '#3a3a3a' : '#e8e8e8';;
                           e.currentTarget.style.color = theme.text.primary;
                           e.currentTarget.style.borderColor = theme.border.primary;
                           const levelSpan = e.currentTarget.querySelector('span:last-child');
                           if (levelSpan) levelSpan.style.color = theme.text.tertiary;
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                          e.currentTarget.style.backgroundColor = theme.bg.secondary;
                           e.currentTarget.style.color = 'black';
                           e.currentTarget.style.borderColor = '#ddd';
                           const levelSpan = e.currentTarget.querySelector('span:last-child');
