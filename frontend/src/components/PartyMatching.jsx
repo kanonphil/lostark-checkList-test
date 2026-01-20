@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { getTheme, useTheme } from "../hooks/useTheme";
 
 function PartyMatching() {
   const [groupedRaids, setGroupedRaids] = useState({});
@@ -15,6 +16,20 @@ function PartyMatching() {
 
   const [allCompletedParties, setAllCompletedParties] = useState([]);
   const [activeTab, setActiveTab] = useState('select'); // 'select', 'party', 'completed'
+
+  const { isDark } = useTheme()
+  const theme = getTheme(isDark)
+
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     loadRaids();
@@ -230,30 +245,45 @@ function PartyMatching() {
   }, {});
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ 
+      padding: isMobile ? '10px' : '20px', 
+      maxWidth: '1400px', 
+      margin: '0 auto',
+      backgroundColor: theme.bg.primary,
+      minHeight: '100vh'
+    }}>
       {/* 상단 타이틀 */}
-      <h2 style={{ marginBottom: '20px' }}>파티 매칭</h2>
+      <h2 style={{ 
+        marginBottom: '20px',
+        color: theme.text.primary,
+        fontSize: isMobile ? '20px' : '24px'
+      }}>
+        파티 매칭
+      </h2>
 
       {/* 탭 메뉴 */}
       <div style={{ 
         display: 'flex', 
-        gap: '10px', 
+        gap: isMobile ? '5px' : '10px', 
         marginBottom: '30px',
-        borderBottom: '2px solid #ddd',
-        paddingBottom: '0'
+        borderBottom: `2px solid ${theme.border.primary}`,
+        paddingBottom: '0',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}>
         <button
           onClick={() => setActiveTab('select')}
           style={{
-            padding: '12px 24px',
+            padding: isMobile ? '10px 16px' : '12px 24px',
             backgroundColor: 'transparent',
             border: 'none',
             borderBottom: activeTab === 'select' ? '3px solid #4CAF50' : '3px solid transparent',
             cursor: 'pointer',
-            fontSize: '16px',
+            fontSize: isMobile ? '14px' : '16px',
             fontWeight: activeTab === 'select' ? 'bold' : 'normal',
-            color: activeTab === 'select' ? '#4CAF50' : '#666',
-            transition: 'all 0.2s'
+            color: activeTab === 'select' ? '#4CAF50' : theme.text.secondary,
+            transition: 'all 0.2s',
+            whiteSpace: 'nowrap'
           }}
         >
           레이드 선택
@@ -269,36 +299,47 @@ function PartyMatching() {
             cursor: selectedRaid ? 'pointer' : 'not-allowed',
             fontSize: '16px',
             fontWeight: activeTab === 'party' ? 'bold' : 'normal',
-            color: activeTab === 'party' ? '#4CAF50' : '#666',
+            color: activeTab === 'party' ? '#4CAF50' : theme.text.secondary,
             opacity: selectedRaid ? 1 : 0.5,
             transition: 'all 0.2s'
           }}
         >
-          파티 구성 {selectedRaid && `(${selectedRaid.raidName} - ${selectedRaid.difficulty})`}
+          {isMobile ? '파티' : `파티 구성 ${selectedRaid ? `(${selectedRaid.raidName} - ${selectedRaid.difficulty})` : ''}`}
         </button>
         <button
           onClick={() => setActiveTab('completed')}
           style={{
-            padding: '12px 24px',
+            padding: isMobile ? '10px 16px' : '12px 24px',
             backgroundColor: 'transparent',
             border: 'none',
             borderBottom: activeTab === 'completed' ? '3px solid #4CAF50' : '3px solid transparent',
             cursor: 'pointer',
-            fontSize: '16px',
+            fontSize: isMobile ? '14px' : '16px',
             fontWeight: activeTab === 'completed' ? 'bold' : 'normal',
-            color: activeTab === 'completed' ? '#4CAF50' : '#666',
-            transition: 'all 0.2s'
+            color: activeTab === 'completed' ? '#4CAF50' : theme.text.secondary,
+            transition: 'all 0.2s',
+            whiteSpace: 'nowrap'
           }}
         >
-          완료된 파티 ({allCompletedParties.length})
+          완료 ({allCompletedParties.length})
         </button>
       </div>
 
       {/* 탭 1: 레이드 선택 */}
       {activeTab === 'select' && (
         <div>
-          <h3 style={{ marginBottom: '20px' }}>레이드를 선택하세요</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          <h3 style={{ 
+            marginBottom: '20px' ,
+            color: theme.text.primary,
+            fontSize: isMobile ? '18px' : '20px'
+          }}>
+            레이드를 선택하세요
+          </h3>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', 
+            gap: isMobile ? '15px' : '20px' 
+          }}>
             {Object.entries(groupedRaids).map(([raidGroup, raidsInGroup]) => {
               const minLevel = Math.min(...raidsInGroup.map(r => r.requiredItemLevel));
               const maxLevel = Math.max(...raidsInGroup.map(r => r.requiredItemLevel));
@@ -309,16 +350,26 @@ function PartyMatching() {
                 <div 
                   key={raidGroup}
                   style={{
-                    backgroundColor: 'white',
-                    border: '2px solid #ddd',
+                    backgroundColor: theme.card.bg,
+                    border: `2px solid ${theme.card.border}`,
                     borderRadius: '12px',
-                    padding: '20px',
+                    padding: isMobile ? '15px' : '20px',
                     transition: 'all 0.2s',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    boxShadow: theme.card.shadow,
                   }}
                 >
-                  <h4 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>{raidGroup}</h4>
-                  <div style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
+                  <h4 style={{ 
+                    margin: '0 0 10px 0', 
+                    fontSize: isMobile ? '16px' : '18px', 
+                    color: theme.text.primary
+                  }}>
+                    {raidGroup}
+                  </h4>
+                  <div style={{ 
+                    fontSize: '13px', 
+                    color: theme.text.secondary, 
+                    marginBottom: '15px' 
+                  }}>
                     {levelRange} · {getPartyTypeLabel(firstRaid)}
                   </div>
                   
@@ -328,25 +379,26 @@ function PartyMatching() {
                         key={raid.id}
                         onClick={() => handleRaidSelection(raidGroup, raid.difficulty)}
                         style={{
-                          padding: '12px 16px',
-                          backgroundColor: '#f5f5f5',
-                          border: '1px solid #ddd',
+                          padding: isMobile ? '10px 14px' : '12px 16px',
+                          backgroundColor: theme.bg.secondary,
+                          border: `1px solid ${theme.border.primary}`,
                           borderRadius: '8px',
                           cursor: 'pointer',
-                          fontSize: '14px',
+                          fontSize: isMobile ? '13px' : '14px',
                           fontWeight: '500',
                           transition: 'all 0.2s',
                           textAlign: 'left',
                           display: 'flex',
                           justifyContent: 'space-between',
-                          alignItems: 'center'
+                          alignItems: 'center',
+                          color: theme.text.primary
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#4CAF50';
-                          e.currentTarget.style.color = 'white';
-                          e.currentTarget.style.borderColor = '#4CAF50';
+                          e.currentTarget.style.backgroundColor = theme.bg.secondary;
+                          e.currentTarget.style.color = theme.text.primary;
+                          e.currentTarget.style.borderColor = theme.border.primary;
                           const levelSpan = e.currentTarget.querySelector('span:last-child');
-                          if (levelSpan) levelSpan.style.color = 'rgba(255, 255, 255, 0.8)';
+                          if (levelSpan) levelSpan.style.color = theme.text.tertiary;
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = '#f5f5f5';
@@ -357,7 +409,11 @@ function PartyMatching() {
                         }}
                       >
                         <span>{raid.difficulty}</span>
-                        <span style={{ fontSize: '12px', color: '#999', transition: 'color 0.2s' }}>
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: theme.text.tertiary, 
+                          transition: 'color 0.2s' 
+                        }}>
                           레벨 {raid.requiredItemLevel}
                         </span>
                       </button>
@@ -374,7 +430,12 @@ function PartyMatching() {
       {activeTab === 'party' && (
         <div>
           {loading && (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#666', fontSize: '18px' }}>
+            <div style={{ 
+              textAlign: 'center', 
+              padding: isMobile ? '40px 20px' : '60px', 
+              color: theme.text.secondary, 
+              fontSize: isMobile ? '16px' : '18px' 
+            }}>
               로딩 중...
             </div>
           )}
@@ -383,16 +444,23 @@ function PartyMatching() {
             <>
               {/* 선택된 레이드 정보 */}
               <div style={{ 
-                backgroundColor: '#e8f5e9', 
-                padding: '20px', 
+                backgroundColor: theme.completed.bg, 
+                padding: isMobile ? '15px' : '20px', 
                 borderRadius: '12px', 
-                marginBottom: '30px',
-                border: '2px solid #4CAF50'
+                marginBottom: isMobile ? '20px' : '30px',
+                border: `2px solid ${theme.completed.border}`
               }}>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>
+                <h3 style={{ 
+                  margin: '0 0 8px 0', 
+                  fontSize: isMobile ? '18px' : '20px',
+                  color: theme.text.primary
+                }}>
                   {selectedRaid.raidName} - {selectedRaid.difficulty}
                 </h3>
-                <div style={{ fontSize: '14px', color: '#666' }}>
+                <div style={{ 
+                  fontSize: isMobile ? '13px' : '14px', 
+                  color: theme.text.secondary 
+                }}>
                   레벨 {selectedRaid.requiredItemLevel} · {getPartyTypeLabel(selectedRaid)} · 
                   {selectedRaid.partyType === '카제로스' ? ' 딜러 6 + 서폿 2' : ' 딜러 3 + 서폿 1'}
                 </div>
@@ -400,14 +468,26 @@ function PartyMatching() {
 
               {/* 가능한 캐릭터 목록 */}
               <div style={{ marginBottom: '30px' }}>
-                <h3 style={{ marginBottom: '15px' }}>
+                <h3 style={{ 
+                  marginBottom: '15px',
+                  color: theme.text.primary,
+                  fontSize: isMobile ? '18px' : '20px'
+                }}>
                   파티 구성 가능 캐릭터 (총 {availableCharacters.totalAvailable}명)
                 </h3>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: isMobile ? '1if' : '1fr 1fr', 
+                  gap: isMobile ? '15px' : '20px'
+                }}>
                   {/* 딜러 */}
                   <div>
-                    <h4 style={{ marginBottom: '12px', color: '#f44336' }}>
+                    <h4 style={{ 
+                      marginBottom: '12px',
+                      color: theme.role.dealer.text,
+                      fontSize: isMobile ? '15px' : '16px'
+                    }}>
                       딜러 ({availableCharacters.dealers.length}명)
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -418,9 +498,13 @@ function PartyMatching() {
                             key={char.id}
                             onClick={() => toggleCharacterSelection(char)}
                             style={{
-                              padding: '12px',
-                              backgroundColor: isSelected ? '#ffcdd2' : '#ffebee',
-                              border: isSelected ? '2px solid #f44336' : '1px solid #ddd',
+                              padding: isMobile ? '10px' : '12px',
+                              backgroundColor: isSelected 
+                                ? (isDark ? theme.role.dealer.bgSelected : '#ffcdd2') 
+                                : (isDark ? theme.role.dealer.bg : '#ffebee'),
+                              border: isSelected 
+                                ? `2px solid ${theme.role.dealer.border}` 
+                                : `1px solid ${theme.border.primary}`,
                               borderRadius: '8px',
                               cursor: 'pointer',
                               display: 'flex',
@@ -430,8 +514,17 @@ function PartyMatching() {
                             }}
                           >
                             <div style={{ textAlign: 'left' }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{char.characterName}</div>
-                              <div style={{ fontSize: '12px', color: '#666' }}>
+                              <div style={{ 
+                                fontWeight: 'bold', 
+                                fontSize: isMobile ? '13px' : '14px',
+                                color: theme.text.primary
+                              }}>
+                                {char.characterName}
+                              </div>
+                              <div style={{ 
+                                fontSize: isMobile ? '11px' : '12px', 
+                                color: theme.text.secondary 
+                              }}>
                                 {char.className} · Lv.{char.itemLevel.toFixed(2)}
                               </div>
                             </div>
@@ -446,7 +539,11 @@ function PartyMatching() {
 
                   {/* 서폿 */}
                   <div>
-                    <h4 style={{ marginBottom: '12px', color: '#2196F3' }}>
+                    <h4 style={{ 
+                      marginBottom: '12px', 
+                      color: theme.role.support.text,
+                      fontSize: isMobile ? '15px' : '16px'
+                    }}>
                       서폿 ({availableCharacters.supports.length}명)
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -457,9 +554,13 @@ function PartyMatching() {
                             key={char.id}
                             onClick={() => toggleCharacterSelection(char)}
                             style={{
-                              padding: '12px',
-                              backgroundColor: isSelected ? '#bbdefb' : '#e3f2fd',
-                              border: isSelected ? '2px solid #2196F3' : '1px solid #ddd',
+                              padding: isMobile ? '10px' : '12px',
+                              backgroundColor: isSelected 
+                                ? (isDark ? theme.role.support.bgSelected : '#bbdefb') 
+                                : (isDark ? theme.role.support.bg : '#e3f2fd'),
+                              border: isSelected 
+                                ? `2px solid ${theme.role.support.border}` 
+                                : `1px solid ${theme.border.primary}`,
                               borderRadius: '8px',
                               cursor: 'pointer',
                               display: 'flex',
@@ -469,8 +570,17 @@ function PartyMatching() {
                             }}
                           >
                             <div style={{ textAlign: 'left' }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{char.characterName}</div>
-                              <div style={{ fontSize: '12px', color: '#666' }}>
+                              <div style={{ 
+                                fontWeight: 'bold', 
+                                fontSize: isMobile ? '13px' : '14px',
+                                color: theme.text.primary
+                              }}>
+                                {char.characterName}
+                              </div>
+                              <div style={{ 
+                                fontSize: isMobile ? '11px' : '12px', 
+                                color: theme.text.secondary 
+                              }}>
                                 {char.className} · Lv.{char.itemLevel.toFixed(2)}
                               </div>
                             </div>
@@ -508,14 +618,25 @@ function PartyMatching() {
               {/* 구성된 파티 */}
               {manualParty && (
                 <div style={{ marginBottom: '30px' }}>
-                  <h3 style={{ marginBottom: '15px' }}>구성된 파티</h3>
-                  <div style={{
-                    backgroundColor: 'white',
-                    padding: '20px',
-                    borderRadius: '12px',
-                    border: '2px solid #FF9800',
+                  <h3 style={{ 
+                    marginBottom: '15px',
+                    color: theme.text.primary,
+                    fontSize: isMobile ? '18px' : '20px'
                   }}>
-                    <div style={{ marginBottom: '15px', fontSize: '18px', fontWeight: 'bold' }}>
+                    구성된 파티
+                  </h3>
+                  <div style={{
+                    backgroundColor: theme.card.bg,
+                    padding: isMobile ? '15px' : '20px',
+                    borderRadius: '12px',
+                    border: `2px solid ${theme.manual.border}`,
+                  }}>
+                    <div style={{ 
+                      marginBottom: '15px', 
+                      fontSize: isMobile ? '16px' : '18px', 
+                      fontWeight: 'bold',
+                      color: theme.text.primary
+                    }}>
                       파티 ({manualParty.total}명: 딜러 {manualParty.dealerCount} + 서폿 {manualParty.supportCount})
                     </div>
                     
@@ -596,16 +717,22 @@ function PartyMatching() {
 
               {/* 추천 파티 */}
               <div>
-                <h3 style={{ marginBottom: '15px' }}>추천 파티 구성</h3>
+                <h3 style={{ 
+                  marginBottom: '15px',
+                  color: theme.text.primary,
+                  fontSize: isMobile ? '18px' : '20px'
+                }}>
+                  추천 파티 구성
+                </h3>
                 
                 {partyRecommendations.length === 0 ? (
                   <div style={{
-                    backgroundColor: 'white',
-                    padding: '40px',
+                    backgroundColor: theme.card.bg,
+                    padding: isMobile ? '30px 15px' : '40px',
                     borderRadius: '12px',
-                    border: '1px solid #ddd',
+                    border: `1px solid ${theme.card.border}`,
                     textAlign: 'center',
-                    color: '#999',
+                    color: theme.text.secondary,
                   }}>
                     파티를 구성할 수 없습니다.
                     <br />
@@ -619,36 +746,58 @@ function PartyMatching() {
                       <div
                         key={index}
                         style={{
-                          backgroundColor: 'white',
-                          padding: '20px',
+                          backgroundColor: theme.card.bg,
+                          padding: isMobile ? '15px' : '20px',
                           borderRadius: '12px',
-                          border: '1px solid #ddd',
+                          border: `1px solid ${theme.card.border}`,
                         }}
                       >
-                        <h4 style={{ marginBottom: '15px' }}>
+                        <h4 style={{ 
+                          marginBottom: '15px',
+                          color: theme.text.primary,
+                          fontSize: isMobile? '16px' : '18px'
+                        }}>
                           추천 파티 {index + 1} ({party.type} - {party.partySize}인)
                         </h4>
                         
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                          gap: isMobile ? '10px' : '15px', 
+                          marginBottom: '15px' 
+                        }}>
                           <div>
-                            <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#f44336' }}>
+                            <div style={{ 
+                              fontWeight: 'bold', 
+                              marginBottom: '10px', 
+                              color: theme.role.dealer.text,
+                              fontSize: isMobile ? '14px' : '15px' 
+                            }}>
                               딜러 ({party.dealerCount}명)
                             </div>
                             {party.dealers.map(char => (
                               <div
                                 key={char.id}
                                 style={{
-                                  padding: '10px 12px',
-                                  backgroundColor: '#ffebee',
+                                  padding: isMobile ? '8px 10px' : '10px 12px',
+                                  backgroundColor: isDark ? theme.role.dealer.bg : '#ffebee',
                                   borderRadius: '8px',
                                   marginBottom: '8px',
                                   textAlign: 'left',
                                 }}
                               >
-                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                                <div style={{ 
+                                  fontWeight: 'bold', 
+                                  marginBottom: '4px',
+                                  color: theme.text.primary,
+                                  fontSize: isMobile ? '13px' : '14px'
+                                }}>
                                   {char.characterName}
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#666' }}>
+                                <div style={{ 
+                                  fontSize: isMobile ? '11px' : '12px', 
+                                  color: theme.text.secondary
+                                }}>
                                   {char.className} · Lv.{char.itemLevel.toFixed(2)}
                                 </div>
                               </div>
@@ -656,24 +805,37 @@ function PartyMatching() {
                           </div>
 
                           <div>
-                            <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#2196F3' }}>
+                            <div style={{ 
+                              fontWeight: 'bold', 
+                              marginBottom: '10px', 
+                              color: theme.role.support.text,
+                              fontSize: isMobile ? '14px' : '15px'
+                            }}>
                               서폿 ({party.supportCount}명)
                             </div>
                             {party.supports.map(char => (
                               <div
                                 key={char.id}
                                 style={{
-                                  padding: '10px 12px',
-                                  backgroundColor: '#e3f2fd',
+                                  padding: isMobile ? '8px 10px' : '10px 12px',
+                                  backgroundColor: isDark ? theme.role.support.bg : '#e3f2fd',
                                   borderRadius: '8px',
                                   marginBottom: '8px',
                                   textAlign: 'left',
                                 }}
                               >
-                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                                <div style={{ 
+                                  fontWeight: 'bold', 
+                                  marginBottom: '4px',
+                                  color: theme.text.primary,
+                                  fontSize: isMobile ? '13px' : '14px'
+                                }}>
                                   {char.characterName}
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#666' }}>
+                                <div style={{ 
+                                  fontSize: isMobile ? '11px' : '12px', 
+                                  color: theme.text.secondary
+                                }}>
                                   {char.className} · Lv.{char.itemLevel.toFixed(2)}
                                 </div>
                               </div>
@@ -711,17 +873,23 @@ function PartyMatching() {
       {/* 탭 3: 완료된 파티 */}
       {activeTab === 'completed' && (
         <div>
-          <h3 style={{ marginBottom: '20px' }}>완료된 파티 목록</h3>
+          <h3 style={{ 
+            marginBottom: '20px',
+            color: theme.text.primary,
+            fontSize: isMobile ? '18px' : '20px'
+          }}>
+            완료된 파티 목록
+          </h3>
           
           {allCompletedParties.length === 0 ? (
             <div style={{
-              backgroundColor: 'white',
-              padding: '60px',
+              backgroundColor: theme.card.bg,
+              padding: isMobile ? '40px 20px' : '60px',
               borderRadius: '12px',
-              border: '1px solid #ddd',
+              border: `1px solid ${theme.card.border}`,
               textAlign: 'center',
-              color: '#999',
-              fontSize: '16px'
+              color: theme.text.secondary,
+              fontSize: isMobile ? '14px' : '16px'
             }}>
               완료된 파티가 없습니다.
             </div>
@@ -731,10 +899,11 @@ function PartyMatching() {
                 <div key={raidGroup}>
                   <h4 style={{ 
                     margin: '0 0 15px 0', 
-                    padding: '12px 16px', 
-                    backgroundColor: '#e3f2fd', 
+                    padding: isMobile ? '10px 12px' : '12px 16px', 
+                    backgroundColor: theme.completed.bg, 
                     borderRadius: '8px',
-                    fontSize: '18px'
+                    fontSize: isMobile ? '16px' : '18px',
+                    color: theme.text.primary
                   }}>
                     {raidGroup}
                   </h4>
@@ -744,8 +913,8 @@ function PartyMatching() {
                       <div style={{ 
                         fontWeight: 'bold', 
                         marginBottom: '10px',
-                        fontSize: '15px',
-                        color: '#666'
+                        fontSize: isMobile ? '14px' : '15px',
+                        color: theme.text.secondary
                       }}>
                         {difficulty} ({parties.length}개 파티)
                       </div>
@@ -755,16 +924,25 @@ function PartyMatching() {
                           <div
                             key={party.id}
                             style={{
-                              backgroundColor: 'white',
-                              padding: '16px',
+                              backgroundColor: theme.card.bg,
+                              padding: isMobile ? '12px' : '16px',
                               borderRadius: '8px',
-                              border: '2px solid #4CAF50',
+                              border: `2px solid ${theme.completed.border}`,
                             }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                              <h5 style={{ margin: 0 }}>파티 {index + 1}</h5>
+                              <h5 style={{ 
+                                margin: 0,
+                                color: theme.text.primary,
+                                fontSize: isMobile ? '14px' : '16px'
+                              }}>
+                                파티 {index + 1}
+                              </h5>
                               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                <span style={{ fontSize: '13px', color: '#666' }}>
+                                <span style={{ 
+                                  fontSize: isMobile ? '11px' : '13px', 
+                                  color: theme.text.secondary
+                                }}>
                                   {new Date(party.completedAt).toLocaleString('ko-KR', { 
                                     timeZone: 'Asia/Seoul',
                                     year: 'numeric',
@@ -794,23 +972,31 @@ function PartyMatching() {
 
                             <div style={{ 
                               display: 'grid', 
-                              gridTemplateColumns: 'repeat(4, 1fr)', 
-                              gap: '10px' 
+                              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', 
+                              gap: isMobile ? '8px' : '10px' 
                             }}>
                               {party.characters.map(char => (
                                 <div
                                   key={char.id}
                                   style={{
-                                    padding: '10px 12px',
-                                    backgroundColor: isSupport(char.className) ? '#e3f2fd' : '#ffebee',
+                                    padding: isMobile ? '8px 10px' : '10px 12px',
+                                    backgroundColor: isSupport(char.className) ? (isDark ? theme.role.support.bg : '#e3f2fd') : (isDark ? theme.role.dealer.bg : '#ffebee'),
                                     borderRadius: '8px',
                                     textAlign: 'left',
                                   }}
                                 >
-                                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                                  <div style={{ 
+                                    fontWeight: 'bold', 
+                                    marginBottom: '4px',
+                                    color: theme.text.primary,
+                                    fontSize: isMobile ? '13px' : '14px'
+                                  }}>
                                     {char.characterName}
                                   </div>
-                                  <div style={{ fontSize: '12px', color: '#666' }}>
+                                  <div style={{ 
+                                    fontSize: isMobile ? '11px' : '12px', 
+                                    color: theme.text.secondary 
+                                  }}>
                                     {char.className} · Lv.{char.itemLevel.toFixed(2)}
                                   </div>
                                 </div>
