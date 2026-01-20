@@ -1,9 +1,24 @@
 import { useState, useEffect } from "react";
 import { accountAPI } from "../services/api";
+import { useTheme, getTheme } from "../hooks/useTheme";
 
 function RaidComparison({ currentUserId }) {
   const [comparison, setComparison] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const { isDark } = useTheme()
+  const theme = getTheme(isDark)
+
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     loadComparison();
@@ -29,12 +44,19 @@ function RaidComparison({ currentUserId }) {
 
   return (
     <div style={{
-      padding: '20px',
+      padding: isMobile ? '10px' : '20px',
       maxWidth: '100%',
-      overflowX: 'auto'
+      overflowX: 'auto',
+      backgroundColor: theme.bg.primary,
+      minHeight: '100vh',
     }}>
-      <h2>레이드 비교</h2>
-      <p style={{color: '#666', marginBottom: '20px'}}>
+      <h2 style={{
+        color: theme.text.primary,
+        fontSize: isMobile ? '20px' : '24px',
+      }}>
+        레이드 비교
+      </h2>
+      <p style={{color: theme.text.secondary, marginBottom: '20px'}}>
         내 캐릭터의 레이드 완료 현황을 한눈에 확인하세요
       </p>
 
@@ -43,23 +65,26 @@ function RaidComparison({ currentUserId }) {
         overflowX: 'auto',
         borderRadius: '8px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        backgroundColor: 'white'
+        backgroundColor: theme.card.bg
       }}>
         <table style={{
           width: '100%',
           borderCollapse: 'collapse',
-          minWidth: '800px',  // ✅ 최소 너비
+          minWidth: '800px',
+          color: theme.text.primary,
         }}>
           <thead>
-            <tr style={{backgroundColor: '#f5f5f5'}}>
+            <tr style={{backgroundColor: theme.bg.secondary}}>
               {/* ✅ 첫 번째 열 고정 */}
               <th style={{
-                padding: '15px',
+                padding: isMobile ? '10px' : '15px',
+                fontSize: isMobile ? '13px' : '14px',
                 textAlign: 'center',
                 borderBottom: '2px solid #ddd',
                 position: 'sticky',
                 left: 0,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: theme.bg.secondary,
+                color: theme.text.primary,
                 zIndex: 10,
                 minWidth: '200px'
               }}>
@@ -75,7 +100,7 @@ function RaidComparison({ currentUserId }) {
                   <div style={{fontWeight: 'bold', marginBottom: '5px'}}>
                     {char.characterName}
                   </div>
-                  <div style={{fontSize: '12px', color: '#666', fontWeight: 'normal'}}>
+                  <div style={{fontSize: '12px', color: theme.text.secondary, fontWeight: 'normal'}}>
                     Lv.{char.itemLevel?.toFixed(2)}
                   </div>
                 </th>
@@ -85,7 +110,7 @@ function RaidComparison({ currentUserId }) {
           <tbody>
             {comparison.raids.map((raid, index) => (
               <tr key={raid.raidId} style={{
-                backgroundColor: index % 2 === 0 ? 'white' : '#fafafa',
+                backgroundColor: index % 2 === 0 ? theme.card.bg : theme.bg.secondary,
               }}>
                 {/* ✅ 첫 번째 열 고정 */}
                 <td style={{
@@ -93,14 +118,14 @@ function RaidComparison({ currentUserId }) {
                   borderBottom: '1px solid #eee',
                   position: 'sticky',
                   left: 0,
-                  backgroundColor: index % 2 === 0 ? 'white' : '#fafafa',
+                  backgroundColor: index % 2 === 0 ? theme.card.bg : theme.bg.secondary,
                   zIndex: 5,
                   fontWeight: 'bold',
                 }}>
                   <div style={{fontSize: '15px'}}>
                     {raid.raidName}
                   </div>
-                  <div style={{fontSize: '13px', color: '#666', marginTop: '5px', fontWeight: 'normal'}}>
+                  <div style={{fontSize: '13px', color: theme.text.secondary, marginTop: '5px', fontWeight: 'normal'}}>
                     {raid.difficulty} · Lv.{raid.requiredItemLevel}
                   </div>
                 </td>
@@ -122,12 +147,12 @@ function RaidComparison({ currentUserId }) {
                         }}>
                           ✓ 완료
                         </div>
-                        <div style={{fontSize: '13px', color: '#666'}}>
+                        <div style={{fontSize: '13px', color: theme.text.secondary}}>
                           {char.earnedGold.toLocaleString()}G
                         </div>
                       </div>
                     ) : (
-                      <span style={{color: '#999', fontSize: '14px'}}>미완료</span>
+                      <span style={{color: theme.text.tertiary, fontSize: '14px'}}>미완료</span>
                     )}
                   </td>
                 ))}
@@ -141,7 +166,7 @@ function RaidComparison({ currentUserId }) {
       <p style={{
         marginTop: '15px',
         fontSize: '13px',
-        color: '#999',
+        color: theme.text.tertiary,
         textAlign: 'center'
       }}>
         💡 테이블을 좌우로 스크롤할 수 있습니다

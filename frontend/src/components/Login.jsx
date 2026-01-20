@@ -1,11 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { userAPI } from '../services/api';
+import { useTheme, getTheme } from '../hooks/useTheme';
 
 function Login({ onLogin }) {
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(false)
+
+  const { isDark } = useTheme()
+  const theme = getTheme(isDark)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,27 +59,44 @@ function Login({ onLogin }) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#f5f5f5',
+      backgroundColor: theme.bg.primary,
+      padding: isMobile ? '20px' : 0,
     }}>
       <div style={{
-        backgroundColor: 'white',
-        padding: '40px',
+        backgroundColor: theme.card.bg,
+        padding: isMobile ? '30px 20px' : '40px',
         borderRadius: '10px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        boxShadow: theme.card.shadow,
         width: '100%',
-        maxWidth: '400px',
+        maxWidth: isMobile ? '90%' : '400px',
       }}>
-        <h1 style={{textAlign: 'center', marginBottom: '30px'}}>
+        <h1 style={{
+          textAlign: 'center', 
+          marginBottom: isMobile ? '20px' : '30px',
+          color: theme.text.primary,
+          fontSize: isMobile ? '20px' : '24px',
+        }}>
           로스트아크 레이드 체크리스트
         </h1>
         
-        <h2 style={{textAlign: 'center', marginBottom: '30px', color: '#666'}}>
+        <h2 style={{
+          textAlign: 'center', 
+          marginBottom: isMobile ? '20px' : '30px', 
+          color: theme.text.secondary,
+          fontSize: isMobile ? '18px' : '20px',
+        }}>
           {isRegister ? '회원가입' : '로그인'}
         </h2>
 
         <form onSubmit={handleSubmit}>
           <div style={{marginBottom: '20px'}}>
-            <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>
+            <label style={{
+              display: 'block', 
+              marginBottom: '5px', 
+              fontWeight: 'bold',
+              color: theme.text.primary,
+              fontSize: isMobile ? '14px' : '16px',
+            }}>
               아이디
             </label>
             <input
@@ -74,17 +106,25 @@ function Login({ onLogin }) {
               placeholder="아이디 입력"
               style={{
                 width: '100%',
-                padding: '10px',
-                fontSize: '16px',
-                border: '1px solid #ddd',
+                padding: isMobile ? '8px' : '10px',
+                fontSize: isMobile ? '14px' : '16px',
+                border: `1px solid ${theme.border.primary}`,
                 borderRadius: '5px',
                 boxSizing: 'border-box',
+                backgroundColor: theme.bg.secondary,
+                color: theme.text.primary
               }}
             />
           </div>
 
-          <div style={{marginBottom: '30px'}}>
-            <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>
+          <div style={{marginBottom: isMobile ? '20px' : '30px'}}>
+            <label style={{
+              display: 'block', 
+              marginBottom: '5px', 
+              fontWeight: 'bold',
+              color: theme.text.primary,
+              fontSize: isMobile ? '14px' : '16px',
+            }}>
               비밀번호
             </label>
             <input
@@ -94,11 +134,13 @@ function Login({ onLogin }) {
               placeholder="비밀번호 입력"
               style={{
                 width: '100%',
-                padding: '10px',
-                fontSize: '16px',
-                border: '1px solid #ddd',
+                padding: isMobile ? '8px' : '10px',
+                fontSize: isMobile ? '14px' : '16px',
+                border: `1px solid ${theme.border.primary}`,
                 borderRadius: '5px',
                 boxSizing: 'border-box',
+                backgroundColor: theme.bg.secondary,
+                color: theme.text.primary
               }}
             />
           </div>
@@ -108,8 +150,8 @@ function Login({ onLogin }) {
             disabled={loading}
             style={{
               width: '100%',
-              padding: '12px',
-              fontSize: '16px',
+              padding: isMobile ? '10px' : '12px',
+              fontSize: isMobile ? '14px' : '16px',
               fontWeight: 'bold',
               backgroundColor: loading ? '#ccc' : '#4CAF50',
               color: 'white',
@@ -130,8 +172,8 @@ function Login({ onLogin }) {
             }}
             style={{
               width: '100%',
-              padding: '10px',
-              fontSize: '14px',
+              padding: isMobile ? '8px' : '10px',
+              fontSize: isMobile ? '13px' : '14px',
               backgroundColor: 'transparent',
               color: '#2196F3',
               border: '1px solid #2196F3',

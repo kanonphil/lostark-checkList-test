@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { completionAPI } from '../services/api';
 import ResetTimer from './ResetTimer';
+import { useTheme, getTheme } from '../hooks/useTheme';
 
 function RaidChecklist({ character }) {
   const [completions, setCompletions] = useState([]);
@@ -9,6 +10,20 @@ function RaidChecklist({ character }) {
   const [processingGateId, setProcessingGateId] = useState(null);
   const [expandedRaids, setExpandedRaids] = useState({}); // ✅ 추가: 확장된 레이드 그룹
   const [selectedDifficulty, setSelectedDifficulty] = useState({}); // ✅ 추가: 선택된 난이도
+
+  const { isDark } = useTheme()
+  const theme = getTheme(isDark)
+
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     if (character) {
@@ -131,16 +146,40 @@ function RaidChecklist({ character }) {
   const isGoldLimitReached = completedGroups >= 3;
 
   return (
-    <div style={{padding: '20px'}}>
+    <div style={{
+      padding: isMobile ? '10px' : '20px',
+      backgroundColor: theme.bg.primary,
+      minHeight: '100vh',
+    }}>
       <ResetTimer />
       
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-        <h2>{character.characterName}의 레이드 체크리스트</h2>
-        <div style={{textAlign: 'right'}}>
-          <p style={{margin: '5px 0', fontSize: '24px', fontWeight: 'bold', color: '#4CAF50'}}>
+      <div style={{
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: 'space-between', 
+        alignItems: isMobile ? 'flex-start' : 'center', 
+        gap: isMobile ? '10px' : '0',
+        marginBottom: '20px'
+      }}>
+        <h2 style={{
+          color: theme.text.primary,
+          fontSize: isMobile ? '20px' : '24px',
+        }}>
+          {character.characterName}의 레이드 체크리스트
+        </h2>
+        <div style={{textAlign: isMobile ? 'left' : 'right'}}>
+          <p style={{
+            margin: '5px 0', 
+            fontSize: isMobile ? '20px' : '24px', 
+            fontWeight: 'bold', 
+            color: '#4CAF50'
+          }}>
             총 골드: {totalGold.toLocaleString()}G
           </p>
-          <p style={{margin: '5px 0', color: completedGroups >= 3 ? '#f44336' : '#666'}}>
+          <p style={{
+            margin: '5px 0', 
+            color: completedGroups >= 3 ? '#f44336' : theme.text.secondary
+          }}>
             완료: {completedGroups}/3 레이드 {isGoldLimitReached && '(골드 획득 완료)'}
           </p>
         </div>
@@ -161,25 +200,35 @@ function RaidChecklist({ character }) {
             <div
               key={raidGroup}
               style={{
-                border: '2px solid ' + (isGroupCompleted ? '#4CAF50' : isOverLimit ? '#ffcccc' : '#ddd'),
+                border: `2px solid ${isGroupCompleted ? '#4CAF50' : isOverLimit ? '#ffcccc' : theme.card.border}`,
                 borderRadius: '8px',
-                backgroundColor: isGroupCompleted ? '#f1f8f4' : isOverLimit ? '#fff5f5' : 'white',
+                backgroundColor: isGroupCompleted 
+                  ? (isDark ? '#1b2e1b' : '#f1f8f4')
+                  : isOverLimit 
+                    ? (isDark ? '#3d1f1f' : '#fff5f5') 
+                    : theme.card.bg,
               }}
             >
               {/* 레이드 그룹 헤더 */}
               <div
                 onClick={() => toggleRaidGroup(raidGroup)}
                 style={{
-                  padding: '15px',
+                  padding: isMobile ? '12px' : '15px',
                   cursor: 'pointer',
                   display: 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
                   justifyContent: 'space-between',
-                  alignItems: 'center',
+                  alignItems: isMobile ? 'flex-start' : 'center',
                   userSelect: 'none',
+                  gap: isMobile ? '10px' : '0',
                 }}
               >
                 <div style={{textAlign: 'left'}}>
-                  <h3 style={{margin: '0 0 5px 0'}}>
+                  <h3 style={{
+                    margin: '0 0 5px 0',
+                    color: theme.text.primary,
+                    fontSize: isMobile ? '18px' : '20px',
+                  }}>
                     {raidGroup}
                     {isOverLimit && (
                       <span style={{marginLeft: '10px', color: '#f44336', fontSize: '14px'}}>
@@ -187,12 +236,17 @@ function RaidChecklist({ character }) {
                       </span>
                     )}
                   </h3>
-                  <p style={{margin: '5px 0', color: '#666', fontSize: '14px'}}>
+                  <p style={{margin: '5px 0', color: theme.text.secondary, fontSize: '14px'}}>
                     {isGroupCompleted ? '완료됨' : '미완료'} | 클릭하여 {isExpanded ? '접기' : '펼치기'}
                   </p>
                 </div>
                 <div style={{textAlign: 'right'}}>
-                  <p style={{margin: '0', fontSize: '20px', fontWeight: 'bold', color: groupGold > 0 ? '#4CAF50' : '#999'}}>
+                  <p style={{
+                    margin: '0', 
+                    fontSize: isMobile ? '18px' : '20px', 
+                    fontWeight: 'bold', 
+                    color: groupGold > 0 ? '#4CAF50' : theme.text.tertiary
+                  }}>
                     {groupGold.toLocaleString()}G
                   </p>
                   <p style={{margin: '5px 0', fontSize: '24px'}}>
@@ -203,7 +257,10 @@ function RaidChecklist({ character }) {
 
               {/* 펼쳐진 내용 */}
               {isExpanded && (
-                <div style={{padding: '0 15px 15px 15px', borderTop: '1px solid #ddd'}}>
+                <div style={{
+                  padding: '0 15px 15px 15px', 
+                  borderTop: `1px solid ${theme.border.primary}`
+                }}>
                   {/* 난이도 선택 버튼 */}
                   <div style={{display: 'flex', gap: '10px', marginTop: '15px', marginBottom: '15px'}}>
                     {raids.map(raid => (
@@ -211,13 +268,13 @@ function RaidChecklist({ character }) {
                         key={raid.id}
                         onClick={() => selectDifficulty(raidGroup, raid.raid.difficulty)}
                         style={{
-                          padding: '8px 16px',
-                          backgroundColor: selectedDiff === raid.raid.difficulty ? '#2196F3' : '#f0f0f0',
-                          color: selectedDiff === raid.raid.difficulty ? 'white' : 'black',
+                          padding: isMobile ? '6px 12px' : '8px 16px',
+                          backgroundColor: selectedDiff === raid.raid.difficulty ? '#2196F3' : theme.bg.secondary,
+                          color: selectedDiff === raid.raid.difficulty ? 'white' : theme.text.primary,
                           border: 'none',
                           borderRadius: '5px',
                           cursor: 'pointer',
-                          fontSize: '14px',
+                          fontSize: isMobile ? '13px' : '14px',
                           fontWeight: selectedDiff === raid.raid.difficulty ? 'bold' : 'normal',
                         }}
                       >
@@ -228,7 +285,11 @@ function RaidChecklist({ character }) {
 
                   {/* 선택된 난이도의 관문 목록 */}
                   {selectedRaid && (
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                    <div style={{
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '10px'
+                    }}>
                       {selectedRaid.gateCompletions.map((gate) => {
                         const isOtherGateCompleted = !gate.completed && 
                           isGateCompleted(raidGroup, gate.raidGate.gateNumber);
@@ -238,17 +299,27 @@ function RaidChecklist({ character }) {
                           <div
                             key={gate.id}
                             style={{
-                              border: '1px solid ' + (gate.completed ? '#4CAF50' : isOtherGateCompleted ? '#ffcccc' : '#ddd'),
-                              padding: '10px',
+                              border: `1px solid ${gate.completed ? '#4CAF50' : isOtherGateCompleted ? '#ffcccc' : theme.border.primary}`,
+                              padding: isMobile ? '8px' : '10px',
                               borderRadius: '5px',
-                              backgroundColor: gate.completed ? '#e8f5e9' : isOtherGateCompleted ? '#fff5f5' : 'white',
+                              backgroundColor: gate.completed 
+                                ? (isDark ? '#1b2e1b' : '#e8f5e9') 
+                                : isOtherGateCompleted 
+                                  ? (isDark ? '#3d1f1f' : '#fff5f5')
+                                  : theme.card.bg,
                               opacity: isOtherGateCompleted ? 0.6 : 1,
                             }}
                           >
-                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div style={{
+                              display: 'flex', 
+                              flexDirection: isMobile ? 'column' : 'row',
+                              justifyContent: 'space-between', 
+                              alignItems: isMobile ? 'flex-start' : 'center',
+                              gap: isMobile ? '10px' : '0',
+                            }}>
                               <div>
-                                <strong>{gate.raidGate.gateNumber}관문</strong>
-                                <span style={{marginLeft: '10px', color: '#666'}}>
+                                <strong style={{ color: theme.text.primary }}>{gate.raidGate.gateNumber}관문</strong>
+                                <span style={{marginLeft: '10px', color: theme.text.secondary}}>
                                   보상: {gate.raidGate.rewardGold.toLocaleString()}G
                                 </span>
                                 {gate.extraReward && (
@@ -286,13 +357,13 @@ function RaidChecklist({ character }) {
                                       }}
                                       disabled={isOtherGateCompleted || isProcessing}
                                       style={{
-                                        padding: '5px 15px',
+                                        padding: isMobile ? '4px 12px' : '5px 15px',
                                         backgroundColor: isOtherGateCompleted || isProcessing ? '#ccc' : '#4CAF50',
                                         color: 'white',
                                         border: 'none',
                                         borderRadius: '5px',
                                         cursor: isOtherGateCompleted || isProcessing ? 'not-allowed' : 'pointer',
-                                        fontSize: '14px',
+                                        fontSize: isMobile ? '13px' : '14px',
                                       }}
                                     >
                                       {isProcessing ? '처리중...' : '완료'}

@@ -660,7 +660,7 @@ function PartyMatching() {
                             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
                               {char.characterName}
                             </div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>
+                            <div style={{ fontSize: '12px', color: theme.text.secondary }}>
                               {char.className} · Lv.{char.itemLevel.toFixed(2)}
                             </div>
                           </div>
@@ -686,7 +686,7 @@ function PartyMatching() {
                             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
                               {char.characterName}
                             </div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>
+                            <div style={{ fontSize: '12px', color: theme.text.secondary }}>
                               {char.className} · Lv.{char.itemLevel.toFixed(2)}
                             </div>
                           </div>
