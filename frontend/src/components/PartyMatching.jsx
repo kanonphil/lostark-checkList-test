@@ -402,8 +402,8 @@ function PartyMatching() {
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = theme.bg.secondary;
-                          e.currentTarget.style.color = 'black';
-                          e.currentTarget.style.borderColor = '#ddd';
+                          e.currentTarget.style.color = theme.text.primary;;
+                          e.currentTarget.style.borderColor = theme.border.primary;;
                           const levelSpan = e.currentTarget.querySelector('span:last-child');
                           if (levelSpan) levelSpan.style.color = '#999';
                         }}
