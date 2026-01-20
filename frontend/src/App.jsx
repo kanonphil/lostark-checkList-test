@@ -114,7 +114,7 @@ function App() {
             margin: 0,
             fontSize: isMobile ? '18px' : '24px'
           }}>
-            로스트아크 레이드 체크리스트
+            레이드 체크리스트
           </h1>
 
           {/* 유저 정보 */}
