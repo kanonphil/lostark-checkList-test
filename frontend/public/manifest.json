@@ -1,0 +1,24 @@
+{
+  "name": "동물롱장 체크리스트",
+  "short_name": "동물롱장",
+  "description": "로스트아크 레이드 완료 현황 및 공격대 편성",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#282c34",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/animal-farm-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/animal-farm-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
