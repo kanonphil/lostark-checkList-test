@@ -205,7 +205,7 @@ function App() {
             onClick={() => setActiveTab('management')}
             style={{
               padding: isMobile ? '8px 12px' : '10px 20px',
-              backgroundColor: activeTab === 'mangement' ? '#4CAF50' : '#555',
+              backgroundColor: activeTab === 'management' ? '#4CAF50' : '#555',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
