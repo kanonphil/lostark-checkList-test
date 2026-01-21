@@ -3,7 +3,7 @@ import { characterAPI, completionAPI } from "../services/api";
 import ResetTimer from "./ResetTimer";
 import { useTheme, getTheme } from "../hooks/useTheme";
 
-function CharacterList({ onCharacterSelect, currentUserId }) {
+function CharacterList({ onCharacterSelect, currentUserId, refreshTrigger }) {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [characterStats, setCharacterStats] = useState({});
@@ -29,7 +29,7 @@ function CharacterList({ onCharacterSelect, currentUserId }) {
     console.log('=== CharacterList useEffect 실행 ===');
     console.log('currentUserId:', currentUserId);
     loadData();
-  }, [currentUserId]);
+  }, [currentUserId, refreshTrigger]); // ✅ refreshTrigger 추가
 
   const loadData = async () => {
     try {
@@ -42,7 +42,7 @@ function CharacterList({ onCharacterSelect, currentUserId }) {
       
       setCharacters(charResponse.data);
       
-      // 각 캐릭터의 완료 현황 불러오기
+      // ✅ 각 캐릭터의 완료 현황 불러오기 (강제 새로고침)
       const stats = {};
       for (const char of charResponse.data) {
         try {
@@ -60,6 +60,8 @@ function CharacterList({ onCharacterSelect, currentUserId }) {
             totalCount,
             completionRate
           };
+          
+          console.log(`캐릭터 ${char.characterName} 통계:`, stats[char.id]);
         } catch (error) {
           console.error(`캐릭터 ${char.characterName} 완료 현황 로딩 실패:`, error);
           stats[char.id] = {
@@ -72,7 +74,7 @@ function CharacterList({ onCharacterSelect, currentUserId }) {
       }
       
       setCharacterStats(stats);
-      console.log('캐릭터 통계 로딩 완료:', stats);
+      console.log('=== 전체 캐릭터 통계 로딩 완료 ===');
     } catch (error) {
       console.error('데이터 로딩 실패:', error);
     } finally {

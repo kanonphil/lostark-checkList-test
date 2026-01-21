@@ -3,7 +3,7 @@ import { completionAPI } from '../services/api';
 import ResetTimer from './ResetTimer';
 import { useTheme, getTheme } from '../hooks/useTheme';
 
-function RaidChecklist({ character }) {
+function RaidChecklist({ character, onUpdate }) {
   const [completions, setCompletions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalGold, setTotalGold] = useState(0);
@@ -91,6 +91,11 @@ function RaidChecklist({ character }) {
       console.log('관문 완료 성공');
       
       await refreshData();
+      
+      // ✅ 부모 컴포넌트에 업데이트 알림
+      if (onUpdate) {
+        onUpdate();
+      }
     } catch (error) {
       console.error('완료 처리 실패:', error);
       alert(error.response?.data || '완료 처리 실패');
@@ -220,6 +225,14 @@ function RaidChecklist({ character }) {
           const groupGold = raids.reduce((sum, r) => sum + r.earnedGold, 0);
           const isOverLimit = !isGroupCompleted && isGoldLimitReached;
           
+          // ✅ 완료된 관문 개수 계산
+          const completedGatesCount = raids.reduce((total, raid) => {
+            return total + raid.gateCompletions.filter(gc => gc.completed).length;
+          }, 0);
+          const totalGatesCount = raids.reduce((total, raid) => {
+            return total + raid.gateCompletions.length;
+          }, 0);
+          
           // 선택된 난이도의 레이드 찾기
           const selectedDiff = selectedDifficulty[raidGroup] || raids[0].raid.difficulty;
           const selectedRaid = raids.find(r => r.raid.difficulty === selectedDiff);
@@ -265,7 +278,9 @@ function RaidChecklist({ character }) {
                     )}
                   </h3>
                   <p style={{margin: '5px 0', color: theme.text.secondary, fontSize: '14px'}}>
-                    {isGroupCompleted ? '완료됨' : '미완료'} | 클릭하여 {isExpanded ? '접기' : '펼치기'}
+                    {completedGatesCount > 0 
+                      ? `${completedGatesCount}/${totalGatesCount} 관문 완료` 
+                      : '미완료'} | 클릭하여 {isExpanded ? '접기' : '펼치기'}
                   </p>
                 </div>
                 <div style={{textAlign: 'right'}}>
