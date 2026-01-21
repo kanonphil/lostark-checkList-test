@@ -357,7 +357,8 @@ function MasterAdmin({ currentUser }) {
         marginBottom: isMobile ? '15px' : '20px',
         display: 'flex',
         gap: isMobile ? '8px' : '10px',
-        flexDirection: isMobile ? 'column' : 'row',
+        flexDirection: 'row',  // ✅ 항상 가로 정렬
+        flexWrap: 'wrap',  // ✅ 모바일에서 줄바꿈
       }}>
         <button
           onClick={handleResetWeekly}
@@ -370,7 +371,6 @@ function MasterAdmin({ currentUser }) {
             cursor: 'pointer',
             fontSize: isMobile ? '13px' : '14px',
             fontWeight: 'bold',
-            flex: isMobile ? 1 : 0,
           }}
         >
           🔄 전체 주간 데이터 초기화
@@ -388,7 +388,6 @@ function MasterAdmin({ currentUser }) {
             cursor: 'pointer',
             fontSize: isMobile ? '13px' : '14px',
             fontWeight: 'bold',
-            flex: isMobile ? 1 : 0,
           }}
         >
           🎉 공격대 완료 목록
