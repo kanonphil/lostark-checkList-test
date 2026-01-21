@@ -8,6 +8,7 @@ function MasterAdmin({ currentUser }) {
   const [partyCompletions, setPartyCompletions] = useState([]);
   const [showPartyList, setShowPartyList] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [syncingUserId, setSyncingUserId] = useState(null);  // ✅ 동기화 중인 사용자
 
   const { isDark } = useTheme();
   const theme = getTheme(isDark);
@@ -43,7 +44,7 @@ function MasterAdmin({ currentUser }) {
     }
   };
 
-  // ✅ 공격대 완료 목록 로드
+  // 공격대 완료 목록 로드
   const loadPartyCompletions = async () => {
     try {
       const response = await masterAPI.getAllPartyCompletions(currentUser.id);
@@ -51,6 +52,24 @@ function MasterAdmin({ currentUser }) {
       setShowPartyList(true);
     } catch (error) {
       alert(error.response?.data || '공격대 목록 로딩 실패');
+    }
+  };
+
+  // ✅ 전체 캐릭터 동기화
+  const handleSyncAllCharacters = async (userId, username) => {
+    if (!window.confirm(`"${username}" 계정의 모든 캐릭터를 동기화하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      setSyncingUserId(userId);
+      const response = await masterAPI.syncAllUserCharacters(userId, currentUser.id);
+      alert(response.data.message || '동기화 완료!');
+      loadData();  // 데이터 새로고침
+    } catch (error) {
+      alert(error.response?.data || '동기화 실패');
+    } finally {
+      setSyncingUserId(null);
     }
   };
 
@@ -116,7 +135,7 @@ function MasterAdmin({ currentUser }) {
     );
   }
 
-  // ✅ 공격대 목록 모달
+  // 공격대 목록 모달
   if (showPartyList) {
     return (
       <div style={{
@@ -357,8 +376,8 @@ function MasterAdmin({ currentUser }) {
         marginBottom: isMobile ? '15px' : '20px',
         display: 'flex',
         gap: isMobile ? '8px' : '10px',
-        flexDirection: 'row',  // ✅ 항상 가로 정렬
-        flexWrap: 'wrap',  // ✅ 모바일에서 줄바꿈
+        flexDirection: 'row',
+        flexWrap: 'wrap',
       }}>
         <button
           onClick={handleResetWeekly}
@@ -376,7 +395,6 @@ function MasterAdmin({ currentUser }) {
           🔄 전체 주간 데이터 초기화
         </button>
 
-        {/* ✅ 공격대 목록 버튼 */}
         <button
           onClick={loadPartyCompletions}
           style={{
@@ -462,7 +480,27 @@ function MasterAdmin({ currentUser }) {
               gap: isMobile ? '6px' : '8px',
               width: isMobile ? '100%' : 'auto',
               flexShrink: 0,
+              flexWrap: 'wrap',
             }}>
+              {/* ✅ 전체 동기화 버튼 */}
+              <button
+                onClick={() => handleSyncAllCharacters(user.id, user.username)}
+                disabled={syncingUserId === user.id}
+                style={{
+                  flex: isMobile ? 1 : 0,
+                  padding: isMobile ? '7px 14px' : '8px 16px',
+                  backgroundColor: syncingUserId === user.id ? '#999' : '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: syncingUserId === user.id ? 'not-allowed' : 'pointer',
+                  fontSize: isMobile ? '12px' : '13px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {syncingUserId === user.id ? '⏳ 동기화 중...' : '🔄 전체 동기화'}
+              </button>
+
               <button
                 onClick={() => handleForceChangePassword(user.id, user.username)}
                 style={{

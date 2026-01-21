@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class MasterController {
   }
 
   /**
-   * ✅ 전체 공격대 완료 목록 조회
+   * 전체 공격대 완료 목록 조회
    */
   @GetMapping("/party-completions")
   public ResponseEntity<?> getAllPartyCompletions(@RequestParam Long masterUserId) {
@@ -55,6 +56,29 @@ public class MasterController {
       masterService.checkMasterAuth(masterUserId);
       List<PartyCompletionDTO> completions = masterService.getAllPartyCompletions();
       return ResponseEntity.ok(completions);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
+
+  /**
+   * ✅ 특정 사용자의 모든 캐릭터 동기화
+   */
+  @PostMapping("/users/{userId}/sync-all")
+  public ResponseEntity<?> syncAllUserCharacters(
+          @PathVariable Long userId,
+          @RequestParam Long masterUserId
+  ) {
+    try {
+      masterService.checkMasterAuth(masterUserId);
+      int successCount = masterService.syncAllUserCharacters(userId);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("success", true);
+      response.put("syncedCount", successCount);
+      response.put("message", successCount + "개 캐릭터 동기화 완료");
+
+      return ResponseEntity.ok(response);
     } catch (Exception e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }

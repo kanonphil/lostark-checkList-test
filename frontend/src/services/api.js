@@ -81,6 +81,9 @@ export const masterAPI = {
     ),
   // ✅ 공격대 완료 목록 조회
   getAllPartyCompletions: (masterUserId) => api.get('/master/party-completions', { params: { masterUserId } }),
+  // ✅ 전체 캐릭터 동기화
+  syncAllUserCharacters: (userId, masterUserId) => 
+    api.post(`/master/users/${userId}/sync-all`, null, { params: { masterUserId } }),
 };
 
 export default api;

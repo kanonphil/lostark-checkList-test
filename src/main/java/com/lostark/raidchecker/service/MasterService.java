@@ -28,6 +28,7 @@ public class MasterService {
   private final GateCompletionRepository gateCompletionRepository;
   private final PartyCompletionRepository partyCompletionRepository;
   private final WeeklyCompletionService weeklyCompletionService;
+  private final CharacterService characterService;  // ✅ 추가
   private final PasswordEncoder passwordEncoder;
 
   /**
@@ -91,7 +92,7 @@ public class MasterService {
   }
 
   /**
-   * ✅ 전체 공격대 완료 목록 조회
+   * 전체 공격대 완료 목록 조회
    */
   public List<PartyCompletionDTO> getAllPartyCompletions() {
     List<PartyCompletion> completions = partyCompletionRepository.findAllByOrderByCompletedAtDesc();
@@ -122,6 +123,26 @@ public class MasterService {
 
       return dto;
     }).collect(Collectors.toList());
+  }
+
+  /**
+   * ✅ 특정 사용자의 모든 캐릭터 동기화
+   */
+  @Transactional
+  public int syncAllUserCharacters(Long userId) {
+    List<Character> characters = characterRepository.findByUser_Id(userId);
+
+    int successCount = 0;
+    for (Character character : characters) {
+      try {
+        characterService.syncCharacter(character.getId());
+        successCount++;
+      } catch (Exception e) {
+        System.err.println("캐릭터 동기화 실패: " + character.getCharacterName() + " - " + e.getMessage());
+      }
+    }
+
+    return successCount;
   }
 
   /**
