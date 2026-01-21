@@ -20,7 +20,14 @@ public class User {
   private String username;
 
   @Column(nullable = false)
-  private String password;  // 실제로는 암호화 필요
+  private String password;
+
+  // 보안 질문
+  @Column(name = "security_question")
+  private String securityQuestion;
+
+  @Column(name = "security_answer")
+  private String securityAnswer;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
   private List<Character> characters = new ArrayList<>();

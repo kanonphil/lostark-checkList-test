@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -15,14 +16,16 @@ public class UserController {
 
   private final UserService userService;
 
-  // 회원가입
+  // 회원가입 (보안 질문 추가)
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody Map<String, String> request) {
     try {
       String username = request.get("username");
       String password = request.get("password");
+      String securityQuestion = request.get("securityQuestion");
+      String securityAnswer = request.get("securityAnswer");
 
-      User user = userService.register(username, password);
+      User user = userService.register(username, password, securityQuestion, securityAnswer);
       return ResponseEntity.ok(user);
     } catch (Exception e) {
       return ResponseEntity.badRequest().body(e.getMessage());
@@ -49,6 +52,51 @@ public class UserController {
     try {
       User user = userService.getUser(userId);
       return ResponseEntity.ok(user);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
+
+  // ✅ 비밀번호 변경
+  @PostMapping("/{userId}/change-password")
+  public ResponseEntity<?> changePassword(
+          @PathVariable Long userId,
+          @RequestBody Map<String, String> request
+  ) {
+    try {
+      String currentPassword = request.get("currentPassword");
+      String newPassword = request.get("newPassword");
+
+      userService.changePassword(userId, currentPassword, newPassword);
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
+
+  // ✅ 보안 질문 조회
+  @GetMapping("/security-question")
+  public ResponseEntity<?> getSecurityQuestion(@RequestParam String username) {
+    try {
+      String question = userService.getSecurityQuestion(username);
+      Map<String, String> response = new HashMap<>();
+      response.put("securityQuestion", question);
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
+
+  // ✅ 비밀번호 재설정
+  @PostMapping("/reset-password")
+  public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+    try {
+      String username = request.get("username");
+      String securityAnswer = request.get("securityAnswer");
+      String newPassword = request.get("newPassword");
+
+      userService.resetPassword(username, securityAnswer, newPassword);
+      return ResponseEntity.ok().build();
     } catch (Exception e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }

@@ -8,6 +8,7 @@ import RaidComparison from './components/RaidComparison';
 import CharacterManagement from './components/CharacterManagement';
 import './App.css'
 import PartyMatching from './components/PartyMatching';
+import MasterAdmin from '/components/MasterAdmin';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -93,6 +94,77 @@ function App() {
   // 로그인 안 되어 있으면 로그인 화면
   if (!currentUser) {
     return <Login onLogin={handleLogin} />
+  }
+
+  // Master 계정 전용 UI
+  if (currentUser.username === 'master') {
+    return (
+      <div className="App">
+        <header style={{ 
+          backgroundColor: isDark ? '#1a1a1a' : '#282c34',
+          padding: isMobile ? '15px' : '20px',
+          color: 'white',
+          marginBottom: '20px',
+          borderBottom: '3px solid #f44336',
+        }}>
+          <div style={{
+            display: 'flex', 
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            gap: isMobile ? '10px' : '0',
+          }}>
+            {/* 제목 */}
+            <h1 style={{
+              margin: 0,
+              fontSize: isMobile ? '18px' : '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}>
+              <span style={{ fontSize: isMobile ? '24px' : '32px' }}>🔧</span>
+              Master 관리자 페널
+            </h1>
+
+            {/* 유저 정보 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '15px',
+            }}>
+              <span style={{ 
+                fontSize: isMobile ? '14px' : '16px',
+                color: '#ffd700',
+                fontWeight: 'bold',
+              }}>
+                👑 {currentUser.username}
+              </span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: isMobile ? '6px 12px' : '8px 16px',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: isMobile ? '13px' : '14px',
+                }}
+              >
+                로그아웃
+              </button>
+            </div>
+          </div>
+        </header>
+        
+        <main style={{
+          backgroundColor: theme.bg.primary,
+          minHeight: '100vh',
+        }}>
+          <MasterAdmin currentUser={currentUser} />
+        </main>
+      </div>
+    )
   }
 
   return (

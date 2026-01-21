@@ -94,6 +94,7 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
       alert(`전체 동기화 완료!\n성공: ${successCount}개, 실패: ${failCount}개`)
     } catch (error) {
       alert('전체 동기화 중 오류 발생');
+      console.error('전체 동기화 중 오류 발생:', error)
     } finally {
       setSyncingAll(false)
       setSyncProgress({ current: 0, total: 0 })
