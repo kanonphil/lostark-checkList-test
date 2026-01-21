@@ -5,6 +5,8 @@ import { useTheme, getTheme } from '../hooks/useTheme';
 function MasterAdmin({ currentUser }) {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
+  const [partyCompletions, setPartyCompletions] = useState([]);
+  const [showPartyList, setShowPartyList] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const { isDark } = useTheme();
@@ -41,6 +43,17 @@ function MasterAdmin({ currentUser }) {
     }
   };
 
+  // ✅ 공격대 완료 목록 로드
+  const loadPartyCompletions = async () => {
+    try {
+      const response = await masterAPI.getAllPartyCompletions(currentUser.id);
+      setPartyCompletions(response.data);
+      setShowPartyList(true);
+    } catch (error) {
+      alert(error.response?.data || '공격대 목록 로딩 실패');
+    }
+  };
+
   const handleDeleteUser = async (userId, username) => {
     if (!window.confirm(`정말 "${username}" 계정을 삭제하시겠습니까?\n\n모든 데이터가 삭제됩니다.`)) {
       return;
@@ -55,7 +68,6 @@ function MasterAdmin({ currentUser }) {
     }
   };
 
-  // ✅ 비밀번호 강제 변경
   const handleForceChangePassword = async (userId, username) => {
     const newPassword = prompt(`"${username}" 계정의 새 비밀번호를 입력하세요:\n\n(4자 이상)`);
     
@@ -100,6 +112,121 @@ function MasterAdmin({ currentUser }) {
         color: theme.text.primary,
       }}>
         로딩 중...
+      </div>
+    );
+  }
+
+  // ✅ 공격대 목록 모달
+  if (showPartyList) {
+    return (
+      <div style={{
+        padding: isMobile ? '10px' : '20px',
+        backgroundColor: theme.bg.primary,
+        minHeight: '100vh',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}>
+          <h2 style={{
+            color: theme.text.primary,
+            fontSize: isMobile ? '18px' : '22px',
+            margin: 0,
+          }}>
+            🎉 공격대 완료 목록
+          </h2>
+          <button
+            onClick={() => setShowPartyList(false)}
+            style={{
+              padding: isMobile ? '6px 12px' : '8px 16px',
+              backgroundColor: '#666',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontSize: isMobile ? '12px' : '14px',
+            }}
+          >
+            닫기
+          </button>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: isMobile ? '8px' : '10px',
+        }}>
+          {partyCompletions.length === 0 ? (
+            <div style={{
+              padding: '40px',
+              textAlign: 'center',
+              color: theme.text.secondary,
+              backgroundColor: theme.card.bg,
+              borderRadius: '8px',
+              border: `1px solid ${theme.card.border}`,
+            }}>
+              완료된 공격대가 없습니다
+            </div>
+          ) : (
+            partyCompletions.map((pc) => (
+              <div
+                key={pc.id}
+                style={{
+                  border: `1px solid ${theme.card.border}`,
+                  padding: isMobile ? '12px' : '15px',
+                  borderRadius: '8px',
+                  backgroundColor: theme.card.bg,
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '10px',
+                }}>
+                  <h3 style={{
+                    margin: 0,
+                    color: theme.text.primary,
+                    fontSize: isMobile ? '16px' : '18px',
+                  }}>
+                    {pc.raidName}
+                    {pc.extraReward && ' 💎'}
+                  </h3>
+                  <span style={{
+                    fontSize: isMobile ? '11px' : '12px',
+                    color: theme.text.tertiary,
+                  }}>
+                    {new Date(pc.completedAt).toLocaleString('ko-KR')}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '6px',
+                }}>
+                  {pc.characterNames.map((name, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        padding: '4px 10px',
+                        backgroundColor: theme.bg.secondary,
+                        color: theme.text.primary,
+                        borderRadius: '4px',
+                        fontSize: isMobile ? '12px' : '13px',
+                        border: `1px solid ${theme.border.primary}`,
+                      }}
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     );
   }
@@ -228,6 +355,9 @@ function MasterAdmin({ currentUser }) {
       {/* 관리 버튼 */}
       <div style={{
         marginBottom: isMobile ? '15px' : '20px',
+        display: 'flex',
+        gap: isMobile ? '8px' : '10px',
+        flexDirection: isMobile ? 'column' : 'row',
       }}>
         <button
           onClick={handleResetWeekly}
@@ -240,10 +370,28 @@ function MasterAdmin({ currentUser }) {
             cursor: 'pointer',
             fontSize: isMobile ? '13px' : '14px',
             fontWeight: 'bold',
-            width: isMobile ? '100%' : 'auto',
+            flex: isMobile ? 1 : 0,
           }}
         >
           🔄 전체 주간 데이터 초기화
+        </button>
+
+        {/* ✅ 공격대 목록 버튼 */}
+        <button
+          onClick={loadPartyCompletions}
+          style={{
+            padding: isMobile ? '8px 16px' : '10px 20px',
+            backgroundColor: '#2196F3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: isMobile ? '13px' : '14px',
+            fontWeight: 'bold',
+            flex: isMobile ? 1 : 0,
+          }}
+        >
+          🎉 공격대 완료 목록
         </button>
       </div>
 
@@ -316,7 +464,6 @@ function MasterAdmin({ currentUser }) {
               width: isMobile ? '100%' : 'auto',
               flexShrink: 0,
             }}>
-              {/* 비밀번호 변경 버튼 */}
               <button
                 onClick={() => handleForceChangePassword(user.id, user.username)}
                 style={{
@@ -334,7 +481,6 @@ function MasterAdmin({ currentUser }) {
                 🔑 비밀번호
               </button>
 
-              {/* 삭제 버튼 (master 제외) */}
               {user.username !== 'master' && (
                 <button
                   onClick={() => handleDeleteUser(user.id, user.username)}

@@ -10,4 +10,8 @@ public interface PartyCompletionRepository extends JpaRepository<PartyCompletion
   List<PartyCompletion> findByWeekStart(LocalDateTime weekStart);
   List<PartyCompletion> findByRaid_IdAndWeekStart(Long raidId, LocalDateTime weekStart);
   void deleteByWeekStartBefore(LocalDateTime weekStart);
+  /**
+   * 전체 공격대 완료 목록 (최신순)
+   */
+  List<PartyCompletion> findAllByOrderByCompletedAtDesc();
 }

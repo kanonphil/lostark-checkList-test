@@ -2,13 +2,18 @@ package com.lostark.raidchecker.service;
 
 import com.lostark.raidchecker.dto.SystemStatsDTO;
 import com.lostark.raidchecker.dto.UserStatsDTO;
+import com.lostark.raidchecker.dto.PartyCompletionDTO;
+import com.lostark.raidchecker.entity.PartyCompletion;
 import com.lostark.raidchecker.entity.User;
+import com.lostark.raidchecker.entity.Character;
 import com.lostark.raidchecker.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +26,7 @@ public class MasterService {
   private final CharacterRepository characterRepository;
   private final WeeklyCompletionRepository weeklyCompletionRepository;
   private final GateCompletionRepository gateCompletionRepository;
-  private final PartyCompletionRepository partyCompletionRepository;  // ✅ 추가
+  private final PartyCompletionRepository partyCompletionRepository;
   private final WeeklyCompletionService weeklyCompletionService;
   private final PasswordEncoder passwordEncoder;
 
@@ -55,10 +60,9 @@ public class MasterService {
 
       // 이번 주 총 골드 (모든 캐릭터 합산)
       int totalWeeklyGold = 0;
-      List<com.lostark.raidchecker.entity.Character> characters =
-              characterRepository.findByUser_Id(user.getId());
+      List<Character> characters = characterRepository.findByUser_Id(user.getId());
 
-      for (com.lostark.raidchecker.entity.Character character : characters) {
+      for (Character character : characters) {
         try {
           Integer gold = weeklyCompletionService.getTotalEarnedGold(character.getId());
           totalWeeklyGold += (gold != null ? gold : 0);
@@ -87,6 +91,40 @@ public class MasterService {
   }
 
   /**
+   * ✅ 전체 공격대 완료 목록 조회
+   */
+  public List<PartyCompletionDTO> getAllPartyCompletions() {
+    List<PartyCompletion> completions = partyCompletionRepository.findAllByOrderByCompletedAtDesc();
+
+    return completions.stream().map(pc -> {
+      PartyCompletionDTO dto = new PartyCompletionDTO();
+      dto.setId(pc.getId());
+      dto.setRaidName(pc.getRaid().getName());
+      dto.setExtraReward(pc.getExtraReward());
+      dto.setCompletedAt(pc.getCompletedAt());
+      dto.setWeekStart(pc.getWeekStart());
+
+      // characterIds를 파싱하여 캐릭터 이름 가져오기
+      List<String> characterNames = new ArrayList<>();
+      if (pc.getCharacterIds() != null && !pc.getCharacterIds().isEmpty()) {
+        List<Long> charIds = Arrays.stream(pc.getCharacterIds().split(","))
+                .map(String::trim)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+
+        for (Long charId : charIds) {
+          characterRepository.findById(charId).ifPresent(c ->
+                  characterNames.add(c.getCharacterName())
+          );
+        }
+      }
+      dto.setCharacterNames(characterNames);
+
+      return dto;
+    }).collect(Collectors.toList());
+  }
+
+  /**
    * 사용자 삭제 (CASCADE로 자동 삭제됨)
    */
   @Transactional
@@ -107,8 +145,8 @@ public class MasterService {
    */
   @Transactional
   public void resetAllWeeklyData() {
-    // ✅ 순서 중요! (FK 제약 조건)
-    partyCompletionRepository.deleteAll();  // 먼저 삭제
+    // 순서 중요! (FK 제약 조건)
+    partyCompletionRepository.deleteAll();
     gateCompletionRepository.deleteAll();
     weeklyCompletionRepository.deleteAll();
   }

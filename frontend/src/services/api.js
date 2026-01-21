@@ -79,6 +79,8 @@ export const masterAPI = {
       { newPassword }, 
       { params: { masterUserId } }
     ),
+  // ✅ 공격대 완료 목록 조회
+  getAllPartyCompletions: (masterUserId) => api.get('/master/party-completions', { params: { masterUserId } }),
 };
 
 export default api;
