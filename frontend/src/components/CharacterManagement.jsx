@@ -5,10 +5,15 @@ import { useTheme, getTheme } from "../hooks/useTheme";
 function CharacterManagement({ characters, onUpdate, currentUserId }) {
   const [importName, setImportName] = useState('');
   const [importing, setImporting] = useState(false);
+  const [syncingAll, setSyncingAll] = useState(false)
+  // 전체 동기화 상태
+  const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 }) // 진행률
 
+  // 다크모드
   const { isDark } = useTheme()
   const theme = getTheme(isDark)
 
+  // 모바일
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -48,6 +53,52 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
       alert(error.response?.data || '동기화 실패')
     }
   };
+
+  // 전체 동기화 함수
+  const handleSyncAll = async () => {
+    if (characters.length === 0) {
+      alert('동기화할 캐릭터가 없습니다.')
+      return
+    }
+
+    if (!window.confirm(`${characters.length}개의 캐릭터를 모두 동기화하시겠습니까?`)) {
+      return
+    }
+
+    try {
+      setSyncingAll(true)
+      setSyncProgress({ current: 0, total: characters.length })
+
+      let successCount = 0
+      let failCount = 0
+
+      for (let i = 0; i < characters.length; i++) {
+        const char = characters[i];
+        setSyncProgress({ current: i + 1, total: characters.length })
+
+        try {
+          await characterAPI.syncCharacter(char.id)
+          successCount++
+        } catch (error) {
+          console.error(`${char.characterName} 동기화 실패:`, error)
+          failCount++
+        }
+
+        // 0.5초 대기 (API 부하 방지)
+        if (i < characters.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
+
+      onUpdate()
+      alert(`전체 동기화 완료!\n성공: ${successCount}개, 실패: ${failCount}개`)
+    } catch (error) {
+      alert('전체 동기화 중 오류 발생');
+    } finally {
+      setSyncingAll(false)
+      setSyncProgress({ current: 0, total: 0 })
+    }
+  }
 
   const handleGoldPriorityChange = async (id, characterName, currentPriority) => {
     const newPriority = prompt(
@@ -154,6 +205,38 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
           로스트아크 공식 API에서 캐릭터 정보를 가져옵니다.
         </p>
       </div>
+
+      {/* 전체 동기화 버튼 */}
+      {characters.length > 0 && (
+        <div style={{
+          marginBottom: '20px',
+          display: 'flex',
+          justifyContent: 'flex-end'
+        }}>
+          <button
+            type="button"
+            onClick={handleSyncAll}
+            disabled={syncingAll || importing}
+            style={{
+              padding: isMobile ? '10px 20px' : '12px 30px',
+              backgroundColor: syncingAll ? '#999' : '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: (syncingAll || importing) ? 'not-allowed' : 'pointer',
+              fontSize: isMobile ? '14px' : '16px',
+              fontWeight: 'bold',
+              width: isMobile ? '100%' : 'auto',
+              boxShadow: syncingAll ? 'none' : '0 2px 4px rgba(0,0,0,0.2',
+            }}
+          >
+            {syncingAll
+              ? `동기화 중... (${syncProgress.current}/${syncProgress.total})`
+              : `전체 동기화 (${characters.length}개)`
+            }
+          </button>
+        </div>
+      )}
 
       {/* 캐릭터 목록 */}
       <h3 style={{
