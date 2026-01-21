@@ -21,7 +21,7 @@ public class WeeklyCompletionService {
   private final RaidRepository raidRepository;
   private final RaidGateRepository raidGateRepository;
   private final GateCompletionRepository gateCompletionRepository;
-  private final PartyCompletionRepository partyCompletionRepository;  // ✅ 추가
+  private final PartyCompletionRepository partyCompletionRepository;
 
   /**
    * ✅ 매주 수요일 06:00에 자동으로 지난 주 데이터 삭제 후 새 체크리스트 생성
@@ -167,29 +167,21 @@ public class WeeklyCompletionService {
   }
 
   /**
-   * ✅ 관문 완료 취소 - DB에서 삭제 후 재생성
+   * ✅ 관문 완료 취소 - 필드만 초기화 (삭제/재생성 방식에서 변경)
    */
   @Transactional
   public GateCompletion uncompleteGate(Long gateCompletionId) {
     GateCompletion gateCompletion = gateCompletionRepository.findById(gateCompletionId)
             .orElseThrow(() -> new RuntimeException("관문 완료 기록을 찾을 수 없습니다."));
 
-    // ✅ 필요한 정보 저장
     WeeklyCompletion weeklyCompletion = gateCompletion.getWeeklyCompletion();
-    RaidGate raidGate = gateCompletion.getRaidGate();
 
-    // ✅ 기존 완료 기록 삭제
-    gateCompletionRepository.delete(gateCompletion);
+    // ✅ 삭제 대신 필드만 초기화
+    gateCompletion.setCompleted(false);
+    gateCompletion.setExtraReward(false);
+    gateCompletion.setEarnedGold(0);
 
-    // ✅ 새로운 미완료 상태로 재생성
-    GateCompletion newGateCompletion = new GateCompletion();
-    newGateCompletion.setWeeklyCompletion(weeklyCompletion);
-    newGateCompletion.setRaidGate(raidGate);
-    newGateCompletion.setCompleted(false);
-    newGateCompletion.setExtraReward(false);
-    newGateCompletion.setEarnedGold(0);
-
-    GateCompletion saved = gateCompletionRepository.save(newGateCompletion);
+    GateCompletion saved = gateCompletionRepository.save(gateCompletion);
 
     // WeeklyCompletion 업데이트
     updateWeeklyCompletion(weeklyCompletion);
