@@ -135,20 +135,15 @@ public class WeeklyCompletionService {
       throw new RuntimeException("이미 완료된 관문입니다.");
     }
 
-    // 이 레이드 그룹이 이미 완료되었는지 확인
-    boolean isRaidGroupAlreadyCompleted = isRaidGroupCompleted(character.getId(), raidGroup);
-
-    // 전체 완료된 레이드 그룹 개수 확인
-    int totalCompletedRaidGroups = getTotalCompletedRaidGroups(character.getId());
-
-    // 골드 획득 가능 여부 판단
-    boolean canEarnGold = isRaidGroupAlreadyCompleted || totalCompletedRaidGroups < 3;
+    // ✅ 이 레이드 그룹이 골드를 받을 수 있는지 확인
+    // (이 그룹의 첫 관문을 깨기 전에 이미 3개 그룹을 완료했는지 확인)
+    boolean canEarnGold = canRaidGroupEarnGold(character.getId(), raidGroup);
 
     // 관문 완료 처리
     gateCompletion.setCompleted(true);
     gateCompletion.setExtraReward(extraReward);
 
-    // 골드 계산 (3회 제한 시 0)
+    // ✅ 골드 계산: 이 레이드 그룹이 골드를 받을 수 있는 상태라면 골드 지급
     int earnedGold = 0;
     if (canEarnGold) {
       earnedGold = gateCompletion.getRaidGate().getRewardGold();
@@ -163,7 +158,61 @@ public class WeeklyCompletionService {
     // WeeklyCompletion 업데이트
     updateWeeklyCompletion(weeklyCompletion);
 
+    // ✅ 같은 레이드 그룹의 다른 난이도들도 완료 상태로 업데이트
+    updateSameRaidGroupCompletions(character.getId(), raidGroup);
+
     return gateCompletion;
+  }
+
+  /**
+   * ✅ 이 레이드 그룹이 골드를 받을 수 있는지 확인
+   * - 이미 이 그룹을 시작했다면 (1관문이라도 완료) → 계속 골드 가능
+   * - 아직 시작 안 했다면 → 3개 제한 확인
+   */
+  private boolean canRaidGroupEarnGold(Long characterId, String raidGroup) {
+    LocalDateTime weekStart = WeeklyResetUtil.getCurrentWeekStart();
+
+    List<WeeklyCompletion> completions = weeklyCompletionRepository
+            .findByCharacterIdAndWeekStart(characterId, weekStart);
+
+    // 이 레이드 그룹이 이미 시작되었는지 확인 (관문 1개라도 완료)
+    boolean isThisGroupStarted = completions.stream()
+            .filter(wc -> wc.getRaid().getRaidGroup().equals(raidGroup))
+            .anyMatch(WeeklyCompletion::getCompleted);
+
+    // 이미 시작한 그룹이면 무조건 골드 가능
+    if (isThisGroupStarted) {
+      return true;
+    }
+
+    // 아직 시작 안 한 그룹이면, 이미 완료한 다른 그룹이 3개 미만인지 확인
+    long completedOtherGroups = completions.stream()
+            .filter(WeeklyCompletion::getCompleted)
+            .map(wc -> wc.getRaid().getRaidGroup())
+            .distinct()
+            .count();
+
+    return completedOtherGroups < 3;
+  }
+
+  /**
+   * ✅ 같은 레이드 그룹의 모든 난이도를 완료 상태로 표시
+   * (한 난이도를 클리어하면 다른 난이도는 할 수 없으므로)
+   */
+  private void updateSameRaidGroupCompletions(Long characterId, String raidGroup) {
+    LocalDateTime weekStart = WeeklyResetUtil.getCurrentWeekStart();
+
+    List<WeeklyCompletion> sameGroupCompletions = weeklyCompletionRepository
+            .findByCharacterIdAndWeekStart(characterId, weekStart).stream()
+            .filter(wc -> wc.getRaid().getRaidGroup().equals(raidGroup))
+            .toList();
+
+    for (WeeklyCompletion wc : sameGroupCompletions) {
+      if (!wc.getCompleted()) {
+        wc.setCompleted(true);
+        weeklyCompletionRepository.save(wc);
+      }
+    }
   }
 
   /**
@@ -175,6 +224,8 @@ public class WeeklyCompletionService {
             .orElseThrow(() -> new RuntimeException("관문 완료 기록을 찾을 수 없습니다."));
 
     WeeklyCompletion weeklyCompletion = gateCompletion.getWeeklyCompletion();
+    String raidGroup = weeklyCompletion.getRaid().getRaidGroup();
+    Long characterId = weeklyCompletion.getCharacter().getId();
 
     // ✅ 삭제 대신 필드만 초기화
     gateCompletion.setCompleted(false);
@@ -186,7 +237,39 @@ public class WeeklyCompletionService {
     // WeeklyCompletion 업데이트
     updateWeeklyCompletion(weeklyCompletion);
 
+    // ✅ 같은 레이드 그룹의 다른 난이도 완료 상태 재확인
+    recheckSameRaidGroupCompletions(characterId, raidGroup);
+
     return saved;
+  }
+
+  /**
+   * ✅ 같은 레이드 그룹의 완료 상태 재확인
+   * (관문 취소 시 해당 그룹의 모든 난이도가 미완료 상태인지 확인)
+   */
+  private void recheckSameRaidGroupCompletions(Long characterId, String raidGroup) {
+    LocalDateTime weekStart = WeeklyResetUtil.getCurrentWeekStart();
+
+    List<WeeklyCompletion> sameGroupCompletions = weeklyCompletionRepository
+            .findByCharacterIdAndWeekStart(characterId, weekStart).stream()
+            .filter(wc -> wc.getRaid().getRaidGroup().equals(raidGroup))
+            .toList();
+
+    // 같은 그룹에서 하나라도 완료된 관문이 있는지 확인
+    boolean hasAnyCompletedGate = sameGroupCompletions.stream()
+            .anyMatch(wc -> wc.getGateCompletions().stream()
+                    .anyMatch(GateCompletion::getCompleted));
+
+    // 모든 관문이 미완료 상태라면 모든 난이도를 미완료로 설정
+    if (!hasAnyCompletedGate) {
+      for (WeeklyCompletion wc : sameGroupCompletions) {
+        if (wc.getCompleted()) {
+          wc.setCompleted(false);
+          wc.setEarnedGold(0);
+          weeklyCompletionRepository.save(wc);
+        }
+      }
+    }
   }
 
   // WeeklyCompletion 업데이트 (총 골드 계산 및 완료 여부)
