@@ -8,8 +8,8 @@ function RaidChecklist({ character }) {
   const [loading, setLoading] = useState(true);
   const [totalGold, setTotalGold] = useState(0);
   const [processingGateId, setProcessingGateId] = useState(null);
-  const [expandedRaids, setExpandedRaids] = useState({}); // ✅ 추가: 확장된 레이드 그룹
-  const [selectedDifficulty, setSelectedDifficulty] = useState({}); // ✅ 추가: 선택된 난이도
+  const [expandedRaids, setExpandedRaids] = useState({});
+  const [selectedDifficulty, setSelectedDifficulty] = useState({});
 
   const { isDark } = useTheme()
   const theme = getTheme(isDark)
@@ -42,7 +42,7 @@ function RaidChecklist({ character }) {
       }
       
       setCompletions(response.data);
-      loadTotalGold();
+      await loadTotalGold(); // ✅ await 추가
     } catch (error) {
       console.error('체크리스트 로딩 실패:', error);
     } finally {
@@ -53,6 +53,7 @@ function RaidChecklist({ character }) {
   const loadTotalGold = async () => {
     try {
       const response = await completionAPI.getTotalGold(character.id);
+      console.log('총 골드 조회:', response.data); // ✅ 디버깅용 로그
       setTotalGold(response.data);
     } catch (error) {
       console.error('총 골드 조회 실패:', error);
@@ -61,9 +62,10 @@ function RaidChecklist({ character }) {
 
   const refreshData = async () => {
     try {
+      // ✅ 순서 보장: 완료 데이터 먼저, 그 다음 총 골드
       const response = await completionAPI.getCurrentWeek(character.id);
       setCompletions(response.data);
-      loadTotalGold();
+      await loadTotalGold(); // ✅ await로 순서 보장
     } catch (error) {
       console.error('데이터 새로고침 실패:', error);
     }
@@ -73,7 +75,7 @@ function RaidChecklist({ character }) {
     try {
       setProcessingGateId(gateCompletionId);
       await completionAPI.completeGate(gateCompletionId, extraReward);
-      await refreshData();
+      await refreshData(); // ✅ 완료 후 새로고침
     } catch (error) {
       alert(error.response?.data || '완료 처리 실패');
     } finally {
@@ -84,16 +86,20 @@ function RaidChecklist({ character }) {
   const handleGateUncomplete = async (gateCompletionId) => {
     try {
       setProcessingGateId(gateCompletionId);
+      console.log('완료 취소 요청:', gateCompletionId); // ✅ 디버깅용 로그
       await completionAPI.uncompleteGate(gateCompletionId);
-      await refreshData();
+      console.log('완료 취소 성공, 데이터 새로고침 시작'); // ✅ 디버깅용 로그
+      await refreshData(); // ✅ 취소 후 새로고침
+      console.log('새로고침 완료'); // ✅ 디버깅용 로그
     } catch (error) {
       console.error('완료 취소 실패:', error);
+      alert('완료 취소에 실패했습니다.');
     } finally {
       setProcessingGateId(null);
     }
   };
 
-  // ✅ 레이드 그룹별로 분류
+  // 레이드 그룹별로 분류
   const groupedRaids = completions.reduce((acc, completion) => {
     const group = completion.raid.raidGroup;
     if (!acc[group]) {
@@ -103,7 +109,7 @@ function RaidChecklist({ character }) {
     return acc;
   }, {});
 
-  // ✅ 레이드 그룹 토글
+  // 레이드 그룹 토글
   const toggleRaidGroup = (raidGroup) => {
     setExpandedRaids(prev => ({
       ...prev,
@@ -111,7 +117,7 @@ function RaidChecklist({ character }) {
     }));
   };
 
-  // ✅ 난이도 선택
+  // 난이도 선택
   const selectDifficulty = (raidGroup, difficulty) => {
     setSelectedDifficulty(prev => ({
       ...prev,
