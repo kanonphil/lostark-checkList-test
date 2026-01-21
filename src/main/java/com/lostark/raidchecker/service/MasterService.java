@@ -99,7 +99,7 @@ public class MasterService {
     return completions.stream().map(pc -> {
       PartyCompletionDTO dto = new PartyCompletionDTO();
       dto.setId(pc.getId());
-      dto.setRaidName(pc.getRaid().getName());
+      dto.setRaidName(pc.getRaid().getRaidName() + " " + pc.getRaid().getDifficulty());
       dto.setExtraReward(pc.getExtraReward());
       dto.setCompletedAt(pc.getCompletedAt());
       dto.setWeekStart(pc.getWeekStart());
