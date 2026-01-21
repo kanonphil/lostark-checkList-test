@@ -651,7 +651,7 @@ function PartyMatching() {
                             key={char.id}
                             style={{
                               padding: '10px 12px',
-                              backgroundColor: '#ffebee',
+                              backgroundColor: isDark ? theme.role.dealer.bg : '#ffebee',
                               borderRadius: '8px',
                               marginBottom: '8px',
                               textAlign: 'left',
@@ -677,7 +677,7 @@ function PartyMatching() {
                             key={char.id}
                             style={{
                               padding: '10px 12px',
-                              backgroundColor: '#e3f2fd',
+                              backgroundColor: isDark ? theme.role.support.bg : '#e3f2fd',
                               borderRadius: '8px',
                               marginBottom: '8px',
                               textAlign: 'left',
