@@ -29,7 +29,7 @@ public class User {
   @Column(name = "security_answer")
   private String securityAnswer;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Character> characters = new ArrayList<>();
 
   @Column(name = "created_at")

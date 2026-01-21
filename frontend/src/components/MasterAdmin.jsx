@@ -273,15 +273,19 @@ function MasterAdmin({ currentUser }) {
               flexDirection: isMobile ? 'column' : 'row',
               justifyContent: 'space-between',
               alignItems: isMobile ? 'flex-start' : 'center',
-              gap: isMobile ? '10px' : '0',
+              gap: isMobile ? '10px' : '20px',
             }}
           >
             {/* 사용자 정보 */}
-            <div style={{ flex: 1 }}>
+            <div style={{ 
+              flex: isMobile ? 'none' : 1,
+              marginBottom: isMobile ? '8px' : '0',
+            }}>
               <h4 style={{ 
                 margin: '0 0 5px 0', 
                 color: theme.text.primary,
                 fontSize: isMobile ? '15px' : '17px',
+                textAlign: 'left',
               }}>
                 {user.username}
                 {user.username === 'master' && ' 👑'}
@@ -289,30 +293,34 @@ function MasterAdmin({ currentUser }) {
               <p style={{ 
                 margin: '3px 0', 
                 color: theme.text.secondary, 
-                fontSize: isMobile ? '12px' : '13px' 
+                fontSize: isMobile ? '12px' : '13px',
+                textAlign: 'left',
               }}>
                 캐릭터: {user.characterCount}개 | 주간 골드: {user.weeklyGold.toLocaleString()}G
               </p>
               <p style={{ 
                 margin: '3px 0', 
                 color: theme.text.tertiary, 
-                fontSize: isMobile ? '11px' : '12px' 
+                fontSize: isMobile ? '11px' : '12px',
+                textAlign: 'left',
               }}>
                 가입일: {new Date(user.createdAt).toLocaleDateString()}
               </p>
             </div>
 
-            {/* ✅ 버튼들 */}
+            {/* 버튼들 */}
             <div style={{
               display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
+              flexDirection: isMobile ? 'row' : 'row',
               gap: isMobile ? '6px' : '8px',
               width: isMobile ? '100%' : 'auto',
+              flexShrink: 0,
             }}>
               {/* 비밀번호 변경 버튼 */}
               <button
                 onClick={() => handleForceChangePassword(user.id, user.username)}
                 style={{
+                  flex: isMobile ? 1 : 0,
                   padding: isMobile ? '7px 14px' : '8px 16px',
                   backgroundColor: '#FF9800',
                   color: 'white',
@@ -321,7 +329,6 @@ function MasterAdmin({ currentUser }) {
                   cursor: 'pointer',
                   fontSize: isMobile ? '12px' : '13px',
                   whiteSpace: 'nowrap',
-                  flex: isMobile ? 1 : 0,
                 }}
               >
                 🔑 비밀번호
@@ -332,6 +339,7 @@ function MasterAdmin({ currentUser }) {
                 <button
                   onClick={() => handleDeleteUser(user.id, user.username)}
                   style={{
+                    flex: isMobile ? 1 : 0,
                     padding: isMobile ? '7px 14px' : '8px 16px',
                     backgroundColor: '#f44336',
                     color: 'white',
@@ -340,7 +348,6 @@ function MasterAdmin({ currentUser }) {
                     cursor: 'pointer',
                     fontSize: isMobile ? '12px' : '13px',
                     whiteSpace: 'nowrap',
-                    flex: isMobile ? 1 : 0,
                   }}
                 >
                   삭제

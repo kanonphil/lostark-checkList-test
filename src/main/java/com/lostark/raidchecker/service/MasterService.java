@@ -3,10 +3,7 @@ package com.lostark.raidchecker.service;
 import com.lostark.raidchecker.dto.SystemStatsDTO;
 import com.lostark.raidchecker.dto.UserStatsDTO;
 import com.lostark.raidchecker.entity.User;
-import com.lostark.raidchecker.repository.CharacterRepository;
-import com.lostark.raidchecker.repository.GateCompletionRepository;
-import com.lostark.raidchecker.repository.UserRepository;
-import com.lostark.raidchecker.repository.WeeklyCompletionRepository;
+import com.lostark.raidchecker.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +21,7 @@ public class MasterService {
   private final CharacterRepository characterRepository;
   private final WeeklyCompletionRepository weeklyCompletionRepository;
   private final GateCompletionRepository gateCompletionRepository;
+  private final PartyCompletionRepository partyCompletionRepository;  // ✅ 추가
   private final WeeklyCompletionService weeklyCompletionService;
   private final PasswordEncoder passwordEncoder;
 
@@ -109,7 +107,8 @@ public class MasterService {
    */
   @Transactional
   public void resetAllWeeklyData() {
-    // 순서 중요! (FK 제약 조건)
+    // ✅ 순서 중요! (FK 제약 조건)
+    partyCompletionRepository.deleteAll();  // 먼저 삭제
     gateCompletionRepository.deleteAll();
     weeklyCompletionRepository.deleteAll();
   }

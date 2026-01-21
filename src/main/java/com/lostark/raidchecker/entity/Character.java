@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "characters")
@@ -31,6 +33,11 @@ public class Character {
   @JoinColumn(name = "user_id")
   @JsonIgnore
   private User user;
+
+  // ✅ 추가: WeeklyCompletion 관계
+  @OneToMany(mappedBy = "character", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<WeeklyCompletion> weeklyCompletions = new ArrayList<>();
 
   @Transient
   public Long getUserId() {
