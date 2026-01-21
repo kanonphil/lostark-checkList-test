@@ -152,15 +152,15 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
 
       {/* 캐릭터 추가 */}
       <div style={{
-        padding: '20px',
+        padding: isMobile ? '15px' : '20px',
         backgroundColor: theme.bg.secondary,
         borderRadius: '8px',
-        marginBottom: '30px',
+        marginBottom: isMobile ? '15px' : '30px',
       }}>
         <h3 style={{
           marginTop: 0,
           color: theme.text.primary,
-          fontSize: isMobile ? '18px' : '20px',
+          fontSize: isMobile ? '16px' : '20px',
         }}>
           새 캐릭터 추가
         </h3>
@@ -178,30 +178,36 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
             onKeyDown={(e) => e.key === 'Enter' && handleImport()}
             style={{
               flex: 1,
-              padding: '10px',
-              fontSize: '16px',
+              padding: isMobile ? '8px' : '10px',
+              fontSize: isMobile ? '14px' : '16px',
               border: `1px solid ${theme.border.primary}`,
               borderRadius: '5px',
+              backgroundColor: theme.bg.secondary,
+              color: theme.text.primary,
             }}
           />
           <button
             onClick={handleImport}
-            disabled={importing}
+            disabled={importing || syncingAll}
             style={{
               padding: isMobile ? '8px 16px' : '10px 30px',
               backgroundColor: importing ? '#ccc' : '#4CAF50',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
-              cursor: importing ? 'not-allowed' : 'pointer',
-              fontSize: isMobile ? '14px' : '16px',
+              cursor: (importing || syncingAll) ? 'not-allowed' : 'pointer',
+              fontSize: isMobile ? '13px' : '16px',
               width: isMobile ? '100%' : 'auto',
             }}
           >
             {importing ? '추가 중...' : '추가'}
           </button>
         </div>
-        <p style={{marginTop: '10px', color: theme.text.secondary, fontSize: '14px'}}>
+        <p style={{
+          marginTop: '10px', 
+          color: theme.text.secondary, 
+          fontSize: isMobile ? '12px' : '14px'
+        }}>
           로스트아크 공식 API에서 캐릭터 정보를 가져옵니다.
         </p>
       </div>
@@ -209,7 +215,7 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
       {/* 전체 동기화 버튼 */}
       {characters.length > 0 && (
         <div style={{
-          marginBottom: '20px',
+          marginBottom: isMobile ? '15px' : '20px',
           display: 'flex',
           justifyContent: 'flex-end'
         }}>
@@ -218,21 +224,21 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
             onClick={handleSyncAll}
             disabled={syncingAll || importing}
             style={{
-              padding: isMobile ? '10px 20px' : '12px 30px',
+              padding: isMobile ? '8px 16px' : '10px 24px',
               backgroundColor: syncingAll ? '#999' : '#2196F3',
               color: 'white',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '6px',
               cursor: (syncingAll || importing) ? 'not-allowed' : 'pointer',
-              fontSize: isMobile ? '14px' : '16px',
+              fontSize: isMobile ? '13px' : '14px',
               fontWeight: 'bold',
               width: isMobile ? '100%' : 'auto',
-              boxShadow: syncingAll ? 'none' : '0 2px 4px rgba(0,0,0,0.2',
+              boxShadow: syncingAll ? 'none' : '0 2px 4px rgba(0,0,0,0.2)',
             }}
           >
             {syncingAll
-              ? `동기화 중... (${syncProgress.current}/${syncProgress.total})`
-              : `전체 동기화 (${characters.length}개)`
+              ? `🔄 동기화 중... (${syncProgress.current}/${syncProgress.total})`
+              : `🔄 전체 동기화 (${characters.length}개)`
             }
           </button>
         </div>
@@ -241,94 +247,131 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
       {/* 캐릭터 목록 */}
       <h3 style={{
         color: theme.text.primary,
-        fontSize: isMobile ? '18px' : '20px',
+        fontSize: isMobile ? '16px' : '20px',
       }}>
         내 캐릭터 ({characters.length}개)
       </h3>
-      <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-        {characters.map((char) => (
-          <div
-            key={char.id}
-            style={{
-              border: `1px solid ${theme.card.border}`,
-              padding: isMobile ? '12px' : '15px',
-              borderRadius: '8px',
-              backgroundColor: theme.card.bg,
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: isMobile ? '10px' : '0',
-              justifyContent: 'space-between',
-              alignItems: isMobile ? 'flex-start' : 'center',
-            }}
-          >
-            {/* 캐릭터 정보 */}
-            <div>
-              <h4 style={{margin: '0 0 5px 0', textAlign: 'left'}}>{char.characterName}</h4>
-              <p style={{margin: '5px 0', color: theme.text.secondary, fontSize: '14px', textAlign: 'left'}}>
-                {char.className} | 레벨: {char.itemLevel} | 서버: {char.serverName}
-              </p>
-              <p style={{margin: '5px 0', fontSize: '14px', textAlign: 'left'}}>
-                골드 우선순위: <strong>{char.goldPriority}</strong>
-                {char.goldPriority <= 6 ? ' (골드 획득)' : ' (골드 미획득)'}
-              </p>
-            </div>
+      
+      {characters.length === 0 ? (
+        <div style={{
+          padding: '40px',
+          textAlign: 'center',
+          color: theme.text.secondary,
+          backgroundColor: theme.card.bg,
+          borderRadius: '8px',
+        }}>
+          <p>등록된 캐릭터가 없습니다.</p>
+          <p>위에서 캐릭터를 추가해주세요.</p>
+        </div>
+      ) : (
+        <div style={{
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: isMobile ? '8px' : '10px'
+        }}>
+          {characters.map((char) => (
+            <div
+              key={char.id}
+              style={{
+                border: `1px solid ${theme.card.border}`,
+                padding: isMobile ? '10px' : '16px',
+                borderRadius: '8px',
+                backgroundColor: theme.card.bg,
+                opacity: syncingAll ? 0.6 : 1,
+              }}
+            >
+              {/* 캐릭터 정보 */}
+              <div style={{ marginBottom: isMobile ? '8px' : '0' }}>
+                <h4 style={{
+                  margin: '0 0 5px 0', 
+                  textAlign: 'left',
+                  color: theme.text.primary,
+                  fontSize: isMobile ? '15px' : '17px',
+                }}>
+                  {char.characterName}
+                </h4>
+                <p style={{
+                  margin: '3px 0', 
+                  color: theme.text.secondary, 
+                  fontSize: isMobile ? '12px' : '14px', 
+                  textAlign: 'left'
+                }}>
+                  {char.className} | 레벨: {char.itemLevel} | 서버: {char.serverName}
+                </p>
+                <p style={{
+                  margin: '3px 0', 
+                  fontSize: isMobile ? '12px' : '13px', 
+                  textAlign: 'left',
+                  color: theme.text.secondary,
+                }}>
+                  골드 우선순위: <strong style={{ color: theme.text.primary }}>{char.goldPriority}</strong>
+                  {char.goldPriority <= 6 ? ' (골드 획득)' : ' (골드 미획득)'}
+                </p>
+              </div>
 
-            {/* 버튼들 */}
-            <div style={{
-              display: 'flex', 
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: '10px',
-              width: isMobile ? '100%' : 'auto',
-            }}>
-              <button
-                onClick={() => handleSync(char.id, char.characterName)}
-                style={{
-                  padding: isMobile ? '8px 16px' : '10px 30px',
-                  backgroundColor: '#2196F3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: isMobile ? '14px' : '16px',
-                  width: isMobile ? '100%' : 'auto',
-                }}
-              >
-                동기화
-              </button>
-              <button
-                onClick={() => handleGoldPriorityChange(char.id, char.characterName, char.goldPriority)}
-                style={{
-                  padding: isMobile ? '8px 16px' : '10px 30px',
-                  backgroundColor: '#FF9800',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: isMobile ? '14px' : '16px',
-                  width: isMobile ? '100%' : 'auto',
-                }}
-              >
-                우선순위 변경
-              </button>
-              <button
-                onClick={() => handleDelete(char.id, char.characterName)}
-                style={{
-                  padding: isMobile ? '8px 16px' : '10px 30px',
-                  backgroundColor: '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: isMobile ? '14px' : '16px',
-                  width: isMobile ? '100%' : 'auto',
-                }}
-              >
-                삭제
-              </button>
+              {/* 버튼들 */}
+              <div style={{
+                display: 'flex', 
+                gap: isMobile ? '6px' : '8px',
+                width: '100%',
+                marginTop: isMobile ? '8px' : '0',
+              }}>
+                <button
+                  onClick={() => handleSync(char.id, char.characterName)}
+                  disabled={syncingAll}
+                  style={{
+                    flex: isMobile ? 1 : 0,
+                    padding: isMobile ? '7px 8px' : '8px 16px',
+                    backgroundColor: syncingAll ? '#ccc' : '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: syncingAll ? 'not-allowed' : 'pointer',
+                    fontSize: isMobile ? '12px' : '13px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  동기화
+                </button>
+                <button
+                  onClick={() => handleGoldPriorityChange(char.id, char.characterName, char.goldPriority)}
+                  disabled={syncingAll}
+                  style={{
+                    flex: isMobile ? 1 : 0,
+                    padding: isMobile ? '7px 8px' : '8px 16px',
+                    backgroundColor: syncingAll ? '#ccc' : '#FF9800',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: syncingAll ? 'not-allowed' : 'pointer',
+                    fontSize: isMobile ? '12px' : '13px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {isMobile ? '우선순위' : '우선순위'}
+                </button>
+                <button
+                  onClick={() => handleDelete(char.id, char.characterName)}
+                  disabled={syncingAll}
+                  style={{
+                    flex: isMobile ? 1 : 0,
+                    padding: isMobile ? '7px 8px' : '8px 16px',
+                    backgroundColor: syncingAll ? '#ccc' : '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: syncingAll ? 'not-allowed' : 'pointer',
+                    fontSize: isMobile ? '12px' : '13px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
