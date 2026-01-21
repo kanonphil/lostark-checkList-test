@@ -42,7 +42,7 @@ function RaidChecklist({ character }) {
       }
       
       setCompletions(response.data);
-      await loadTotalGold(); // ✅ await 추가
+      await loadTotalGold();
     } catch (error) {
       console.error('체크리스트 로딩 실패:', error);
     } finally {
@@ -53,7 +53,7 @@ function RaidChecklist({ character }) {
   const loadTotalGold = async () => {
     try {
       const response = await completionAPI.getTotalGold(character.id);
-      console.log('총 골드 조회:', response.data); // ✅ 디버깅용 로그
+      console.log('총 골드 조회:', response.data);
       setTotalGold(response.data);
     } catch (error) {
       console.error('총 골드 조회 실패:', error);
@@ -62,10 +62,21 @@ function RaidChecklist({ character }) {
 
   const refreshData = async () => {
     try {
-      // ✅ 순서 보장: 완료 데이터 먼저, 그 다음 총 골드
+      console.log('데이터 새로고침 시작...');
+      
+      // ✅ 강제로 새로운 데이터 가져오기 (캐시 무시)
       const response = await completionAPI.getCurrentWeek(character.id);
-      setCompletions(response.data);
-      await loadTotalGold(); // ✅ await로 순서 보장
+      console.log('완료 데이터 조회 완료:', response.data);
+      
+      // ✅ 상태를 완전히 새로 설정 (이전 상태 무시)
+      setCompletions([...response.data]); // 새 배열로 복사하여 React가 변경 감지하도록
+      
+      // ✅ 총 골드도 새로 조회
+      const goldResponse = await completionAPI.getTotalGold(character.id);
+      console.log('총 골드 조회 완료:', goldResponse.data);
+      setTotalGold(goldResponse.data);
+      
+      console.log('데이터 새로고침 완료!');
     } catch (error) {
       console.error('데이터 새로고침 실패:', error);
     }
@@ -74,9 +85,14 @@ function RaidChecklist({ character }) {
   const handleGateComplete = async (gateCompletionId, extraReward) => {
     try {
       setProcessingGateId(gateCompletionId);
+      console.log('관문 완료 요청:', gateCompletionId, '더보기:', extraReward);
+      
       await completionAPI.completeGate(gateCompletionId, extraReward);
-      await refreshData(); // ✅ 완료 후 새로고침
+      console.log('관문 완료 성공');
+      
+      await refreshData();
     } catch (error) {
+      console.error('완료 처리 실패:', error);
       alert(error.response?.data || '완료 처리 실패');
     } finally {
       setProcessingGateId(null);
@@ -86,14 +102,20 @@ function RaidChecklist({ character }) {
   const handleGateUncomplete = async (gateCompletionId) => {
     try {
       setProcessingGateId(gateCompletionId);
-      console.log('완료 취소 요청:', gateCompletionId); // ✅ 디버깅용 로그
-      await completionAPI.uncompleteGate(gateCompletionId);
-      console.log('완료 취소 성공, 데이터 새로고침 시작'); // ✅ 디버깅용 로그
-      await refreshData(); // ✅ 취소 후 새로고침
-      console.log('새로고침 완료'); // ✅ 디버깅용 로그
+      console.log('=== 완료 취소 시작 ===');
+      console.log('취소할 관문 ID:', gateCompletionId);
+      
+      // ✅ 취소 API 호출
+      const response = await completionAPI.uncompleteGate(gateCompletionId);
+      console.log('취소 API 응답:', response.data);
+      
+      // ✅ 데이터 완전히 새로고침
+      await refreshData();
+      
+      console.log('=== 완료 취소 완료 ===');
     } catch (error) {
       console.error('완료 취소 실패:', error);
-      alert('완료 취소에 실패했습니다.');
+      alert('완료 취소에 실패했습니다: ' + (error.response?.data || error.message));
     } finally {
       setProcessingGateId(null);
     }
