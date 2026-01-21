@@ -14,11 +14,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul  # ✅ 추가!
 
 server:
   port: ${PORT:8080}
+  timezone: Asia/Seoul  # ✅ 추가!
 
-# 로스트아크 API 설정
 lostark:
   api:
     base-url: https://developer-lostark.game.onstove.com
