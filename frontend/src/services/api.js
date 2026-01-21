@@ -68,22 +68,17 @@ export const accountAPI = {
     api.get('/account/raid-comparison', {params: {userId}}),
 };
 
-// Master API 추가
+// Master 관리자 API
 export const masterAPI = {
-  getAllUsers: (masterUserId) => 
-    api.get('/master/users', { params: { masterUserId } }),
-  getStats: (masterUserId) => 
-    api.get('/master/stats', { params: { masterUserId } }),
-  deleteUser: (userId, masterUserId) => 
-    api.delete(`/master/users/${userId}`, { params: { masterUserId } }),
-  resetWeeklyData: (masterUserId) => 
-    api.post('/master/reset-weekly', null, { params: { masterUserId } }),
-  // 비밀번호 강제 변경 추가
+  getAllUsers: (masterUserId) => api.get('/master/users', { params: { masterUserId } }),
+  getStats: (masterUserId) => api.get('/master/stats', { params: { masterUserId } }),
+  deleteUser: (userId, masterUserId) => api.delete(`/master/users/${userId}`, { params: { masterUserId } }),
+  resetWeeklyData: (masterUserId) => api.post('/master/reset-weekly', null, { params: { masterUserId } }),
   forceChangePassword: (userId, masterUserId, newPassword) => 
     api.post(`/master/users/${userId}/force-password`, 
       { newPassword }, 
       { params: { masterUserId } }
     ),
-}
+};
 
 export default api;
