@@ -237,8 +237,8 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
             }}
           >
             {syncingAll
-              ? `🔄 동기화 중... (${syncProgress.current}/${syncProgress.total})`
-              : `🔄 전체 동기화 (${characters.length}개)`
+              ? `동기화 중... (${syncProgress.current}/${syncProgress.total})`
+              : `전체 동기화 (${characters.length}개)`
             }
           </button>
         </div>
@@ -278,10 +278,18 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
                 borderRadius: '8px',
                 backgroundColor: theme.card.bg,
                 opacity: syncingAll ? 0.6 : 1,
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                justifyContent: 'space-between',
+                alignItems: isMobile ? 'flex-start' : 'center',
+                gap: isMobile ? '0' : '20px',
               }}
             >
               {/* 캐릭터 정보 */}
-              <div style={{ marginBottom: isMobile ? '8px' : '0' }}>
+              <div style={{ 
+                marginBottom: isMobile ? '8px' : '0',
+                flex: isMobile ? 'none' : 1,
+              }}>
                 <h4 style={{
                   margin: '0 0 5px 0', 
                   textAlign: 'left',
@@ -313,8 +321,8 @@ function CharacterManagement({ characters, onUpdate, currentUserId }) {
               <div style={{
                 display: 'flex', 
                 gap: isMobile ? '6px' : '8px',
-                width: '100%',
-                marginTop: isMobile ? '8px' : '0',
+                width: isMobile ? '100%' : 'auto',
+                flexShrink: 0,
               }}>
                 <button
                   onClick={() => handleSync(char.id, char.characterName)}
