@@ -63,7 +63,7 @@ public class MasterController {
   /**
    * 사용자 비밀번호 강제 변경
    */
-  @PostMapping("/master/users/{userId}/force-password")
+  @PostMapping("/users/{userId}/force-password")
   public ResponseEntity<Void> forceChangePassword(
           @PathVariable Long userId,
           @RequestParam Long masterUserId,
