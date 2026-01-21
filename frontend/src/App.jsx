@@ -8,7 +8,7 @@ import RaidComparison from './components/RaidComparison';
 import CharacterManagement from './components/CharacterManagement';
 import './App.css'
 import PartyMatching from './components/PartyMatching';
-import MasterAdmin from '/components/MasterAdmin';
+import MasterAdmin from './components/MasterAdmin';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => {
