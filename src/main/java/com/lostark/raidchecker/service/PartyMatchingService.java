@@ -69,7 +69,6 @@ public class PartyMatchingService {
                 return false;
               }
 
-              // 개인 체크리스트 완료 여부는 체크 안 함
               return true;
             })
             .sorted(Comparator
@@ -255,6 +254,7 @@ public class PartyMatchingService {
 
   /**
    * 파티 완료 처리 (파티 매칭 전용)
+   * ✅ 같은 레이드 그룹의 모든 난이도에 대해 PartyCompletion 생성
    */
   @Transactional
   public void completeParty(PartyCompletionRequest request) {
@@ -266,14 +266,22 @@ public class PartyMatchingService {
             .map(String::valueOf)
             .collect(Collectors.joining(","));
 
-    PartyCompletion completion = new PartyCompletion();
-    completion.setRaid(raid);
-    completion.setCharacterIds(characterIdsStr);
-    completion.setExtraReward(
-            request.getExtraReward() != null ? request.getExtraReward() : false
-    );
+    // ✅ 같은 레이드 그룹의 모든 난이도 가져오기
+    String raidGroup = raid.getRaidGroup();
+    List<Raid> sameGroupRaids = raidRepository.findAll().stream()
+            .filter(r -> r.getRaidGroup().equals(raidGroup))
+            .collect(Collectors.toList());
 
-    partyCompletionRepository.save(completion);
+    // ✅ 같은 그룹의 모든 난이도에 대해 PartyCompletion 생성
+    for (Raid groupRaid : sameGroupRaids) {
+      PartyCompletion completion = new PartyCompletion();
+      completion.setRaid(groupRaid);
+      completion.setCharacterIds(characterIdsStr);
+      completion.setExtraReward(
+              request.getExtraReward() != null ? request.getExtraReward() : false
+      );
+      partyCompletionRepository.save(completion);
+    }
   }
 
   /**
