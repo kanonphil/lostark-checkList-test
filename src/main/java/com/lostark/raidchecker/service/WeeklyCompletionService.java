@@ -260,12 +260,31 @@ public class WeeklyCompletionService {
             .anyMatch(wc -> wc.getGateCompletions().stream()
                     .anyMatch(GateCompletion::getCompleted));
 
-    // 모든 관문이 미완료 상태라면 모든 난이도를 미완료로 설정
     if (!hasAnyCompletedGate) {
+      // 모든 관문이 미완료 상태라면 모든 난이도를 미완료로 설정
       for (WeeklyCompletion wc : sameGroupCompletions) {
         if (wc.getCompleted()) {
           wc.setCompleted(false);
           wc.setEarnedGold(0);
+          weeklyCompletionRepository.save(wc);
+        }
+      }
+    } else {
+      // ✅ 일부 관문이 완료 상태라면, 실제 완료된 난이도의 골드를 다른 난이도에 동기화
+      WeeklyCompletion actualCompleted = sameGroupCompletions.stream()
+              .filter(wc -> wc.getGateCompletions().stream()
+                      .anyMatch(GateCompletion::getCompleted))
+              .findFirst()
+              .orElse(null);
+
+      if (actualCompleted != null) {
+        int actualGold = actualCompleted.getEarnedGold();
+        for (WeeklyCompletion wc : sameGroupCompletions) {
+          if (wc.getId().equals(actualCompleted.getId())) {
+            continue; // 실제 완료한 난이도는 이미 업데이트됨
+          }
+          wc.setCompleted(true);
+          wc.setEarnedGold(actualGold);
           weeklyCompletionRepository.save(wc);
         }
       }
