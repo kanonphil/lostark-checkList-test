@@ -277,7 +277,11 @@ public class PartyMatchingService {
 
     // ✅ 같은 그룹의 모든 난이도에 대해 PartyCompletion 생성
     for (Raid groupRaid : sameGroupRaids) {
-      System.out.println("  - PartyCompletion 생성: " + groupRaid.getRaidName() + " - " + groupRaid.getDifficulty());
+      // ✅ 실제로 선택한 난이도인지 확인
+      boolean isActualCompleted = groupRaid.getId().equals(raid.getId());
+
+      System.out.println("  - PartyCompletion 생성: " + groupRaid.getRaidName() + " - "
+              + groupRaid.getDifficulty() + " (실제완료: " + isActualCompleted + ")");
 
       PartyCompletion completion = new PartyCompletion();
       completion.setRaid(groupRaid);
@@ -285,6 +289,7 @@ public class PartyMatchingService {
       completion.setExtraReward(
               request.getExtraReward() != null ? request.getExtraReward() : false
       );
+      completion.setActualCompleted(isActualCompleted);  // ✅ 실제 완료 여부 설정
       partyCompletionRepository.save(completion);
     }
 
@@ -302,27 +307,31 @@ public class PartyMatchingService {
 
   /**
    * 완료된 파티 목록 (캐릭터 정보 포함)
+   * ✅ 실제로 완료한 난이도만 반환
    */
   public List<Map<String, Object>> getCompletedPartiesWithCharacters(Long raidId) {
     List<PartyCompletion> completedParties = getCompletedParties(raidId);
 
-    return completedParties.stream().map(party -> {
-      // characterIds 문자열을 Long 리스트로 변환
-      List<Long> charIds = Arrays.stream(party.getCharacterIds().split(","))
-              .map(Long::parseLong)
-              .collect(Collectors.toList());
+    // ✅ actualCompleted=true인 것만 필터링
+    return completedParties.stream()
+            .filter(party -> party.getActualCompleted() != null && party.getActualCompleted())
+            .map(party -> {
+              // characterIds 문자열을 Long 리스트로 변환
+              List<Long> charIds = Arrays.stream(party.getCharacterIds().split(","))
+                      .map(Long::parseLong)
+                      .collect(Collectors.toList());
 
-      // 캐릭터 정보 조회
-      List<Character> characters = characterRepository.findAllById(charIds);
+              // 캐릭터 정보 조회
+              List<Character> characters = characterRepository.findAllById(charIds);
 
-      Map<String, Object> result = new HashMap<>();
-      result.put("id", party.getId());
-      result.put("completedAt", party.getCompletedAt());
-      result.put("characters", characters);
-      result.put("extraReward", party.getExtraReward());
+              Map<String, Object> result = new HashMap<>();
+              result.put("id", party.getId());
+              result.put("completedAt", party.getCompletedAt());
+              result.put("characters", characters);
+              result.put("extraReward", party.getExtraReward());
 
-      return result;
-    }).collect(Collectors.toList());
+              return result;
+            }).collect(Collectors.toList());
   }
 
   /**

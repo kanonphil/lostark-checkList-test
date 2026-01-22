@@ -29,6 +29,10 @@ public class PartyCompletion {
   @Column(nullable = false)
   private LocalDateTime completedAt;
 
+  // 실제로 완료한 난이도인지 여부
+  @Column(nullable = false)
+  private Boolean actualCompleted = true;  // 기본값 true
+
   @Column(nullable = false)
   private LocalDateTime weekStart;
 
