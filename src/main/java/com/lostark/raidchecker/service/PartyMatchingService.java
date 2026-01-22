@@ -268,12 +268,17 @@ public class PartyMatchingService {
 
     // ✅ 같은 레이드 그룹의 모든 난이도 가져오기
     String raidGroup = raid.getRaidGroup();
-    List<Raid> sameGroupRaids = raidRepository.findAll().stream()
-            .filter(r -> r.getRaidGroup().equals(raidGroup))
-            .collect(Collectors.toList());
+    List<Raid> sameGroupRaids = raidRepository.findByRaidGroup(raidGroup);
+
+    System.out.println("=== 공격대 완료 처리 ===");
+    System.out.println("선택한 레이드: " + raid.getRaidName() + " - " + raid.getDifficulty());
+    System.out.println("레이드 그룹: " + raidGroup);
+    System.out.println("같은 그룹의 레이드 개수: " + sameGroupRaids.size());
 
     // ✅ 같은 그룹의 모든 난이도에 대해 PartyCompletion 생성
     for (Raid groupRaid : sameGroupRaids) {
+      System.out.println("  - PartyCompletion 생성: " + groupRaid.getRaidName() + " - " + groupRaid.getDifficulty());
+
       PartyCompletion completion = new PartyCompletion();
       completion.setRaid(groupRaid);
       completion.setCharacterIds(characterIdsStr);
@@ -282,6 +287,8 @@ public class PartyMatchingService {
       );
       partyCompletionRepository.save(completion);
     }
+
+    System.out.println("=== 완료 처리 완료 ===");
   }
 
   /**

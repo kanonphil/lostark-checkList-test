@@ -11,4 +11,7 @@ public interface RaidRepository extends JpaRepository<Raid, Long> {
 
   // ✅ 추가: orderIndex 순서로 전체 조회
   List<Raid> findAllByOrderByOrderIndexAsc();
+
+  // ✅ 추가: 레이드 그룹으로 찾기
+  List<Raid> findByRaidGroup(String raidGroup);
 }
