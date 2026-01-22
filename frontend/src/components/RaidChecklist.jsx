@@ -154,8 +154,20 @@ function RaidChecklist({ character, onUpdate }) {
 
   // 같은 레이드 그룹의 같은 관문이 완료되었는지
   const isGateCompleted = (raidGroup, gateNumber) => {
-    return completions.some(c => 
-      c.raid.raidGroup === raidGroup &&
+    // 같은 레이드 그룹의 WeeklyCompletion들 찾기
+    const sameGroupCompletions = completions.filter(c => 
+      c.raid.raidGroup === raidGroup
+    );
+    
+    // 같은 그룹에서 하나라도 completed=true인 것이 있는지 확인
+    const isGroupCompleted = sameGroupCompletions.some(c => c.completed);
+    
+    if (!isGroupCompleted) {
+      return false; // 그룹이 완료 안 됨 → 이 관문도 완료 안 됨
+    }
+    
+    // 그룹이 완료되었으면, 이 관문 번호가 실제로 완료되었는지 확인
+    return sameGroupCompletions.some(c => 
       c.gateCompletions.some(gc => 
         gc.raidGate.gateNumber === gateNumber && gc.completed
       )
