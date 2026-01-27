@@ -2,6 +2,7 @@ package com.lostark.raidchecker.controller;
 
 import com.lostark.raidchecker.entity.User;
 import com.lostark.raidchecker.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,16 +35,44 @@ public class UserController {
 
   // 로그인
   @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+  public ResponseEntity<?> login(@RequestBody Map<String, String> request, HttpSession session) {
     try {
       String username = request.get("username");
       String password = request.get("password");
 
       User user = userService.login(username, password);
+
+      // 세션에 사용자 정보 저장
+      session.setAttribute("userId", user.getId());
+      session.setAttribute("username", user.getUsername());
+
       return ResponseEntity.ok(user);
     } catch (Exception e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<?> logout(HttpSession session) {
+    session.invalidate();
+    return ResponseEntity.ok().build();
+  }
+
+  // 현재 로그인 사용자 확인용 (optional)
+  @GetMapping("/me")
+  public ResponseEntity<?> getCurrentUser(HttpSession session) {
+    Long userId = (Long) session.getAttribute("userId");
+    String username = (String) session.getAttribute("username");
+
+    if (userId == null) {
+      return ResponseEntity.status(401).body("로그인이 필요합니다");
+    }
+
+    Map<String, Object> user = new HashMap<>();
+    user.put("id", userId);
+    user.put("username", username);
+
+    return ResponseEntity.ok(user);
   }
 
   // 내 정보 조회

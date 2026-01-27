@@ -42,6 +42,8 @@ export const characterAPI = {
 // 레이드 API
 export const raidAPI = {
   getAll: () => api.get('/raids'),
+  getById: (id) => api.get(`/raids/${id}`),
+  getAvailable: (itemLevel) => api.get('/raids/available', { params: { itemLevel } }),
 };
 
 // 주간 완료 API
@@ -84,6 +86,31 @@ export const masterAPI = {
   // ✅ 전체 캐릭터 동기화
   syncAllUserCharacters: (userId, masterUserId) => 
     api.post(`/master/users/${userId}/sync-all`, null, { params: { masterUserId } }),
+};
+
+// 캘린더 API
+export const recruitmentAPI = {
+  create: (recruitment) => 
+    api.post('/recruitments', recruitment),
+  
+  getByDateRange: (startDate, endDate) => 
+    api.get('/recruitments', { 
+      params: { 
+        startDate: startDate.toISOString(), 
+        endDate: endDate.toISOString() 
+      } 
+    }),
+  
+  getDetail: (recruitmentId) => 
+    api.get(`/recruitments/${recruitmentId}`),
+  
+  join: (recruitmentId, characterId, role) => 
+    api.post(`/recruitments/${recruitmentId}/join`, { characterId, role }),
+  
+  leave: (recruitmentId, characterId) => 
+    api.delete(`/recruitments/${recruitmentId}/leave`, { 
+      params: { characterId } 
+    }),
 };
 
 export default api;

@@ -9,6 +9,7 @@ import CharacterManagement from './components/CharacterManagement';
 import './App.css'
 import PartyMatching from './components/PartyMatching';
 import MasterAdmin from './components/MasterAdmin';
+import Calendar from './components/Calender';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -303,6 +304,21 @@ function App() {
           >
             {isMobile ? '공격대' : '공격대 편성'}
           </button>
+          <button
+            onClick={() => setActiveTab('calendar')}
+            style={{
+              padding: isMobile ? '8px 12px' : '10px 20px',
+              backgroundColor: activeTab === 'calendar' ? '#4CAF50' : '#555',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontSize: isMobile ? '13px' : '14px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {isMobile ? '캘린더' : '공격대 캘린더'}
+          </button>
         </div>
       </header>
       
@@ -333,6 +349,9 @@ function App() {
         )}
         {activeTab === 'party' && (
           <PartyMatching />
+        )}
+        {activeTab === 'calendar' && (
+          <Calendar characters={characters} />
         )}
       </main>
     </div>
