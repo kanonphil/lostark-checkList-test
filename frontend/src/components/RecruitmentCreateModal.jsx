@@ -11,7 +11,8 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
     raidName: '',
     requiredItemLevel: '',
     raidDate: selectedDate ? selectedDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
-    raidTime: '20:00',
+    raidHour: '20',
+    raidMinute: '20',
     maxPartySize: 4,
     description: ''
   });
@@ -62,7 +63,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
 
     try {
       setLoading(true);
-      const raidDateTime = `${formData.raidDate}T${formData.raidTime}:00`;
+      const raidDateTime = `${formData.raidDate}T${formData.raidHour}:${formData.raidMinute}:00`;
       
       const response = await recruitmentAPI.create({
         raidId: formData.raidId,
@@ -215,7 +216,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
             />
           </div>
 
-          {/* 시간 */}
+          {/* 시간 (시 + 분) */}
           <div style={{ marginBottom: '15px' }}>
             <label style={{
               display: 'block',
@@ -225,30 +226,61 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
             }}>
               레이드 시간 *
             </label>
-            <select
-              value={formData.raidTime}
-              onChange={(e) => setFormData({
-                ...formData,
-                raidTime: e.target.value
-              })}
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: `1px solid ${theme.border.primary}`,
-                borderRadius: '5px',
-                backgroundColor: theme.bg.secondary,
-                color: theme.text.primary,
-              }}
-            >
-              {Array.from({length: 24}, (_, i) => {
-                const hour = i.toString().padStart(2, '0');
-                return (
-                  <option key={i} value={`${hour}:00`}>
-                    {hour}:00
-                  </option>
-                );
-              })}
-            </select>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {/* 시 */}
+              <select
+                value={formData.raidHour}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  raidHour: e.target.value
+                })}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: `1px solid ${theme.border.primary}`,
+                  borderRadius: '5px',
+                  backgroundColor: theme.bg.secondary,
+                  color: theme.text.primary,
+                }}
+              >
+                {Array.from({length: 24}, (_, i) => {
+                  const hour = i.toString().padStart(2, '0');
+                  return (
+                    <option key={i} value={hour}>
+                      {hour}시
+                    </option>
+                  );
+                })}
+              </select>
+          
+              <span style={{ color: theme.text.primary }}>:</span>
+          
+              {/* 분 (5분 단위) */}
+              <select
+                value={formData.raidMinute}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  raidMinute: e.target.value
+                })}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: `1px solid ${theme.border.primary}`,
+                  borderRadius: '5px',
+                  backgroundColor: theme.bg.secondary,
+                  color: theme.text.primary,
+                }}
+              >
+                {Array.from({length: 12}, (_, i) => {
+                  const minute = (i * 5).toString().padStart(2, '0');
+                  return (
+                    <option key={i} value={minute}>
+                      {minute}분
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
 
           {/* 인원 */}
