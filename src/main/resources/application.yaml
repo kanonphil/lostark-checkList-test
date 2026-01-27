@@ -20,6 +20,13 @@ spring:
 server:
   port: ${PORT:8080}
   timezone: Asia/Seoul  # ✅ 추가!
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+        http-only: true
+        secure: false
+      timeout: 30m
 
 lostark:
   api:

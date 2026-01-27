@@ -18,6 +18,15 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        http-only: true
+        secure: true
+      timeout: 30m
+
 lostark:
   api:
     key: ${LOSTARK_API_KEY}
