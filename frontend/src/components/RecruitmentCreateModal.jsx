@@ -10,7 +10,8 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
     raidId: '',
     raidName: '',
     requiredItemLevel: '',
-    raidDateTime: selectedDate ? selectedDate.toISOString().slice(0, 16) : '',
+    raidDate: selectedDate ? selectedDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+    raidTime: '20:00',
     maxPartySize: 4,
     description: ''
   });
@@ -54,17 +55,22 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.raidName || !formData.requiredItemLevel || !formData.raidDateTime) {
+    if (!formData.raidName || !formData.requiredItemLevel || !formData.raidDate) {
       alert('필수 항목을 모두 입력해주세요');
       return;
     }
 
     try {
       setLoading(true);
+      const raidDateTime = `${formData.raidDate}T${formData.raidTime}:00`;
+      
       const response = await recruitmentAPI.create({
-        ...formData,
+        raidId: formData.raidId,
+        raidName: formData.raidName,
         requiredItemLevel: parseFloat(formData.requiredItemLevel),
-        raidDateTime: new Date(formData.raidDateTime).toISOString()
+        raidDateTime: new Date(raidDateTime).toISOString(),
+        maxPartySize: formData.maxPartySize,
+        description: formData.description
       });
       
       alert('공격대 모집이 등록되었습니다!');
@@ -181,7 +187,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
             />
           </div>
 
-          {/* 일시 */}
+          {/* 날짜 */}
           <div style={{ marginBottom: '15px' }}>
             <label style={{
               display: 'block',
@@ -189,14 +195,14 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
               fontWeight: 'bold',
               color: theme.text.primary
             }}>
-              레이드 일시 *
+              레이드 날짜 *
             </label>
             <input
-              type="datetime-local"
-              value={formData.raidDateTime}
+              type="date"
+              value={formData.raidDate}
               onChange={(e) => setFormData({
                 ...formData,
-                raidDateTime: e.target.value
+                raidDate: e.target.value
               })}
               style={{
                 width: '100%',
@@ -207,6 +213,42 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                 color: theme.text.primary,
               }}
             />
+          </div>
+
+          {/* 시간 */}
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '5px',
+              fontWeight: 'bold',
+              color: theme.text.primary
+            }}>
+              레이드 시간 *
+            </label>
+            <select
+              value={formData.raidTime}
+              onChange={(e) => setFormData({
+                ...formData,
+                raidTime: e.target.value
+              })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: `1px solid ${theme.border.primary}`,
+                borderRadius: '5px',
+                backgroundColor: theme.bg.secondary,
+                color: theme.text.primary,
+              }}
+            >
+              {Array.from({length: 24}, (_, i) => {
+                const hour = i.toString().padStart(2, '0');
+                return (
+                  <option key={i} value={`${hour}:00`}>
+                    {hour}:00
+                  </option>
+                );
+              })}
+            </select>
           </div>
 
           {/* 인원 */}
