@@ -25,6 +25,9 @@ public class RecruitmentController {
           @RequestBody RaidRecruitment recruitment,
           HttpSession session) {
 
+    System.out.println("세션 ID: " + session.getId()); // 디버깅용
+    System.out.println("저장된 userId: " + session.getAttribute("userId"));
+
     Long userId = (Long) session.getAttribute("userId");
     if (userId == null) {
       return ResponseEntity.status(401).body("로그인이 필요합니다");

@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "https://raid-check.onrender.com",
                     "https://*.onrender.com"
             )
-            .allowedMethods("GET", "POST", "PUT", "DELETE")
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true);
   }

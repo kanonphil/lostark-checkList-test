@@ -46,6 +46,9 @@ public class UserController {
       session.setAttribute("userId", user.getId());
       session.setAttribute("username", user.getUsername());
 
+      System.out.println("세션 ID: " + session.getId()); // 디버깅용
+      System.out.println("저장된 userId: " + session.getAttribute("userId"));
+
       return ResponseEntity.ok(user);
     } catch (Exception e) {
       return ResponseEntity.badRequest().body(e.getMessage());
