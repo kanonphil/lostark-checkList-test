@@ -12,7 +12,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
     requiredItemLevel: '',
     raidDate: selectedDate ? selectedDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
     raidHour: '20',
-    raidMinute: '20',
+    raidMinute: '00',
     maxPartySize: 4,
     description: ''
   });
