@@ -34,7 +34,12 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
 
   const loadMyCharacters = async () => {
     try {
-      const response = await characterAPI.getAll();
+      const userId = parseInt(localStorage.getItem('userId'));
+      console.log('userId:', userId); // 디버깅
+      
+      const response = await characterAPI.getAll(userId);
+      console.log('캐릭터 응답:', response.data); // 디버깅
+      
       setMyCharacters(response.data || []);
     } catch (error) {
       console.error('캐릭터 조회 실패:', error);

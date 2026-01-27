@@ -25,6 +25,9 @@ public class CharacterController {
   @GetMapping("/{id}")
   public ResponseEntity<Character> getCharacterById(@PathVariable Long id) {
     Character character = characterService.getCharacterById(id);
+    if (character == null) {
+      return ResponseEntity.notFound().build();
+    }
     return ResponseEntity.ok(character);
   }
 

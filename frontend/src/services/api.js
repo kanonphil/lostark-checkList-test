@@ -26,8 +26,10 @@ export const userAPI = {
 
 // 캐릭터 API
 export const characterAPI = {
-  getAll: (userId) => 
-    api.get('/characters', {params: {userId}}),
+  getAll: (userId) => {
+    console.log('캐릭터 조회 userId:', userId)
+    return api.get('/characters', {params: {userId}})
+  },
   getAllForParty: () => 
     api.get('/characters/all'),
   importCharacter: (userId, characterName) => 

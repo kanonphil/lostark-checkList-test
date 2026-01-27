@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { recruitmentAPI } from '../services/api';
 import RecruitmentCreateModal from './RecruitmentCreateModal';
 import RecruitmentDetailModal from './RecruitmentDetailModal';
@@ -24,11 +24,7 @@ function Calendar({ characters }) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useEffect(() => {
-    loadRecruitments();
-  }, [currentDate]);
-
-  const loadRecruitments = async () => {
+  const loadRecruitments = useCallback(async () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     
@@ -47,7 +43,11 @@ function Calendar({ characters }) {
     } catch (error) {
       console.error('모집 로드 실패:', error);
     }
-  };
+  }, [currentDate]);
+
+  useEffect(() => {
+    loadRecruitments();
+  }, [loadRecruitments]);
 
   const getDaysInMonth = () => {
     const year = currentDate.getFullYear();
@@ -86,6 +86,15 @@ function Calendar({ characters }) {
     setShowCreateModal(true);
   };
 
+  // 레이드 이름 짧게 포맷
+  const formatRecruitmentName = (recruitment) => {
+    // "카제로스 2막 카제로스 2막 (노말)" -> "카제로스 2막 (노말)"
+    const raidName = recruitment.raidName.split('(')[0].trim();
+    const difficulty = recruitment.raidName.match(/\(([^)]+)\)/)?.[1] || '';
+    
+    return `${raidName}${difficulty ? ` (${difficulty})` : ''} (${recruitment.currentParticipants}/${recruitment.maxPartySize})`;
+  };
+
   const days = getDaysInMonth();
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -106,7 +115,7 @@ function Calendar({ characters }) {
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
           style={{
             padding: isMobile ? '6px 12px' : '8px 15px',
-            backgroundColor: theme.button?.bg || '#4CAF50',
+            backgroundColor: '#4CAF50',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
@@ -129,7 +138,7 @@ function Calendar({ characters }) {
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
           style={{
             padding: isMobile ? '6px 12px' : '8px 15px',
-            backgroundColor: theme.button?.bg || '#4CAF50',
+            backgroundColor: '#4CAF50',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
@@ -164,11 +173,12 @@ function Calendar({ characters }) {
         ))}
       </div>
 
-      {/* 날짜 그리드 */}
+      {/* 날짜 그리드 - 고정 크기 */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
+        gridAutoRows: isMobile ? '100px' : '120px',  // ✅ 행 높이 고정
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
@@ -178,12 +188,13 @@ function Calendar({ characters }) {
               key={index}
               onClick={() => handleDateClick(date)}
               style={{
-                minHeight: isMobile ? '80px' : '100px',
-                padding: isMobile ? '5px' : '10px',
+                padding: isMobile ? '5px' : '8px',
                 backgroundColor: date ? theme.card.bg : 'transparent',
                 borderRadius: '5px',
                 cursor: date ? 'pointer' : 'default',
                 border: date ? `1px solid ${theme.border?.primary || theme.card.border}` : 'none',
+                overflow: 'hidden',  // ✅ 넘치는 내용 숨김
+                position: 'relative',
               }}
             >
               {date && (
@@ -197,31 +208,27 @@ function Calendar({ characters }) {
                     {date.getDate()}
                   </div>
                   
-                  {/* 모집 표시 */}
-                  {dateRecruitments.map(recruitment => (
-                    <div
-                      key={recruitment.recruitmentId}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedRecruitment(recruitment);
-                      }}
-                      style={{
-                        fontSize: isMobile ? '10px' : '12px',
-                        padding: isMobile ? '3px 4px' : '4px 6px',
-                        backgroundColor: recruitment.status === 'FULL' ? '#f44336' : '#4CAF50',
-                        color: 'white',
-                        borderRadius: '3px',
-                        marginBottom: '3px',
-                        cursor: 'pointer',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                      title={`${recruitment.raidName} (${recruitment.currentParticipants}/${recruitment.maxPartySize})`}
-                    >
-                      {recruitment.raidName} ({recruitment.currentParticipants}/{recruitment.maxPartySize})
-                    </div>
-                  ))}
+                  {/* 모집 표시 - 전광판 애니메이션 */}
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '3px',
+                    overflow: 'hidden',
+                  }}>
+                    {dateRecruitments.map(recruitment => (
+                      <RecruitmentBadge
+                        key={recruitment.recruitmentId}
+                        recruitment={recruitment}
+                        formatName={formatRecruitmentName}
+                        theme={theme}
+                        isMobile={isMobile}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedRecruitment(recruitment);
+                        }}
+                      />
+                    ))}
+                  </div>
                 </>
               )}
             </div>
@@ -253,6 +260,66 @@ function Calendar({ characters }) {
           }}
         />
       )}
+    </div>
+  );
+}
+
+// ✅ 전광판 애니메이션 컴포넌트
+function RecruitmentBadge({ recruitment, formatName, theme, isMobile, onClick }) {
+  const text = formatName(recruitment);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  
+  useEffect(() => {
+    // 텍스트가 너무 길면 애니메이션 활성화
+    const testElement = document.createElement('span');
+    testElement.style.visibility = 'hidden';
+    testElement.style.position = 'absolute';
+    testElement.style.fontSize = isMobile ? '10px' : '12px';
+    testElement.textContent = text;
+    document.body.appendChild(testElement);
+    
+    const textWidth = testElement.offsetWidth;
+    document.body.removeChild(testElement);
+    
+    // 칸 너비보다 길면 애니메이션
+    setShouldAnimate(textWidth > (isMobile ? 70 : 100));
+  }, [text, isMobile]);
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        fontSize: isMobile ? '10px' : '12px',
+        padding: isMobile ? '3px 4px' : '4px 6px',
+        backgroundColor: recruitment.status === 'FULL' ? '#f44336' : '#4CAF50',
+        color: 'white',
+        borderRadius: '3px',
+        cursor: 'pointer',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        position: 'relative',
+      }}
+      title={text}
+    >
+      <span
+        style={{
+          display: 'inline-block',
+          animation: shouldAnimate ? 'marquee 10s linear infinite' : 'none',
+        }}
+      >
+        {text}
+      </span>
+      
+      <style>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+      `}</style>
     </div>
   );
 }
