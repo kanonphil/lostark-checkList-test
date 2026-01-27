@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // 유저 API
@@ -37,6 +38,8 @@ export const characterAPI = {
     api.put(`/characters/${id}/gold-priority`, { goldPriority }),
   deleteCharacter: (id) => 
     api.delete(`/characters/${id}`),
+  getCharacterById: (id) => 
+    api.get(`/characters/${id}`),
 };
 
 // 레이드 API
@@ -81,9 +84,7 @@ export const masterAPI = {
       { newPassword }, 
       { params: { masterUserId } }
     ),
-  // ✅ 공격대 완료 목록 조회
   getAllPartyCompletions: (masterUserId) => api.get('/master/party-completions', { params: { masterUserId } }),
-  // ✅ 전체 캐릭터 동기화
   syncAllUserCharacters: (userId, masterUserId) => 
     api.post(`/master/users/${userId}/sync-all`, null, { params: { masterUserId } }),
 };
