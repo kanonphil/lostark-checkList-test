@@ -108,6 +108,24 @@ public class RecruitmentController {
     }
   }
 
+  @DeleteMapping("/{recruitmentId}")
+  public ResponseEntity<?> deleteRecruitment(
+          @PathVariable Long recruitmentId,
+          HttpSession session) {
+
+    Long userId = (Long) session.getAttribute("userId");
+    if (userId == null) {
+      return ResponseEntity.status(401).body("로그인이 필요합니다");
+    }
+
+    try {
+      recruitmentService.deleteRecruitment(recruitmentId, userId);
+      return ResponseEntity.ok().build();
+    } catch (IllegalStateException e) {
+      return ResponseEntity.status(403).body(e.getMessage());
+    }
+  }
+
   @Data
   static class JoinRequest {
     private Long characterId;

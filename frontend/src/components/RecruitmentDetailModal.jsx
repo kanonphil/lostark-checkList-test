@@ -15,6 +15,7 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
   const [joining, setJoining] = useState(false);
 
   const userId = parseInt(localStorage.getItem('userId'));
+  const isCreator = detail.recruitment.creatorUserId === userId;
 
   useEffect(() => {
     loadDetail();
@@ -130,6 +131,35 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
     );
   }
 
+  // 삭제 핸들러
+  const handleDelete = async () => {
+    if (!confirm('정말 이 모집을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await recruitmentAPI.delete(recruitment.recruitmentId)
+      alert('모집이 삭제되었습니다')
+      onUpdate()
+      onClose()
+    } catch (error) {
+      alert(error.response?.data || '삭제 실패')
+    }
+  };
+
+  // 시간 포맷 수정 (UTC -> 로컬 시간)
+  const formatDateTime = (dateTime) => {
+    const date = new Date(dateTime);
+    return date.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false  // 24시간 형식
+    });
+  };
+
   const eligibleChars = myCharacters.filter(
     char => char.itemLevel >= detail.recruitment.requiredItemLevel
   );
@@ -166,12 +196,38 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
       }}>
         {/* 헤더 */}
         <div style={{ marginBottom: '20px' }}>
-          <h2 style={{ 
-            marginBottom: '10px',
-            color: theme.text.primary 
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-start',
+            marginBottom: '10px' 
           }}>
-            {detail.recruitment.raidName}
-          </h2>
+            <h2 style={{ 
+              margin: 0,
+              color: theme.text.primary 
+            }}>
+              {detail.recruitment.raidName}
+            </h2>
+            
+            {/* ✅ 모집 생성자에게만 삭제 버튼 표시 */}
+            {isCreator && (
+              <button
+                onClick={handleDelete}
+                style={{
+                  padding: '5px 10px',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                모집 삭제
+              </button>
+            )}
+          </div>
+          
           <div style={{ color: theme.text.secondary, fontSize: '14px' }}>
             <div>일시: {new Date(detail.recruitment.raidDateTime).toLocaleString('ko-KR')}</div>
             <div>요구 레벨: {detail.recruitment.requiredItemLevel}</div>

@@ -125,4 +125,17 @@ public class RecruitmentService {
   public List<RaidParticipant> getParticipants(Long recruitmentId) {
     return participantRepository.findByRecruitment_RecruitmentId(recruitmentId);
   }
+
+  @Transactional
+  public void deleteRecruitment(Long recruitmentId, Long userId) {
+    RaidRecruitment recruitment = recruitmentRepository.findById(recruitmentId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모집입니다"));
+
+    // 모집 생성자만 삭제 가능
+    if (!recruitment.getCreatorUserId().equals(userId)) {
+      throw new IllegalStateException("모집을 삭제할 권한이 없습니다");
+    }
+
+    recruitmentRepository.delete(recruitment);
+  }
 }

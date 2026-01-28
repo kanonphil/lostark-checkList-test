@@ -114,6 +114,9 @@ export const recruitmentAPI = {
     api.delete(`/recruitments/${recruitmentId}/leave`, { 
       params: { characterId } 
     }),
+    
+  delete: (recruitmentId) => 
+    api.delete(`/recruitments/${recruitmentId}`),
 };
 
 export default api;
