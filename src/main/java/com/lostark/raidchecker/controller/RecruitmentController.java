@@ -3,15 +3,16 @@ package com.lostark.raidchecker.controller;
 import com.lostark.raidchecker.entity.RaidRecruitment;
 import com.lostark.raidchecker.entity.RaidParticipant;
 import com.lostark.raidchecker.service.RecruitmentService;
-import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/recruitments")
@@ -25,30 +26,38 @@ public class RecruitmentController {
           @RequestBody RaidRecruitment recruitment,
           HttpSession session) {
 
-    System.out.println("세션 ID: " + session.getId()); // 디버깅용
-    System.out.println("저장된 userId: " + session.getAttribute("userId"));
-
     Long userId = (Long) session.getAttribute("userId");
     if (userId == null) {
       return ResponseEntity.status(401).body("로그인이 필요합니다");
     }
 
     RaidRecruitment created = recruitmentService.createRecruitment(recruitment, userId);
-    return ResponseEntity.ok(created);
+
+    // DTO로 변환
+    return ResponseEntity.ok(toRecruitmentDTO(created, 0));
   }
 
   @GetMapping
-  public ResponseEntity<List<RaidRecruitment>> getRecruitments(
+  public ResponseEntity<List<Map<String, Object>>> getRecruitments(
           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 
     List<RaidRecruitment> recruitments =
             recruitmentService.getRecruitmentsByDateRange(startDate, endDate);
-    return ResponseEntity.ok(recruitments);
+
+    // DTO로 변환
+    List<Map<String, Object>> dtoList = recruitments.stream()
+            .map(r -> {
+              int participantCount = recruitmentService.getParticipants(r.getRecruitmentId()).size();
+              return toRecruitmentDTO(r, participantCount);
+            })
+            .collect(Collectors.toList());
+
+    return ResponseEntity.ok(dtoList);
   }
 
   @GetMapping("/{recruitmentId}")
-  public ResponseEntity<RecruitmentDetailResponse> getRecruitmentDetail(
+  public ResponseEntity<Map<String, Object>> getRecruitmentDetail(
           @PathVariable Long recruitmentId) {
 
     RaidRecruitment recruitment = recruitmentService.getRecruitmentById(recruitmentId);
@@ -58,9 +67,11 @@ public class RecruitmentController {
 
     List<RaidParticipant> participants = recruitmentService.getParticipants(recruitmentId);
 
-    RecruitmentDetailResponse response = new RecruitmentDetailResponse();
-    response.setRecruitment(recruitment);
-    response.setParticipants(participants);
+    Map<String, Object> response = new HashMap<>();
+    response.put("recruitment", toRecruitmentDTO(recruitment, participants.size()));
+    response.put("participants", participants.stream()
+            .map(this::toParticipantDTO)
+            .collect(Collectors.toList()));
 
     return ResponseEntity.ok(response);
   }
@@ -83,7 +94,7 @@ public class RecruitmentController {
               request.getRole(),
               userId
       );
-      return ResponseEntity.ok().build();
+      return ResponseEntity.ok(Map.of("message", "참가 신청되었습니다"));
     } catch (IllegalStateException | IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     }
@@ -126,15 +137,42 @@ public class RecruitmentController {
     }
   }
 
+  // DTO 변환 메서드
+  private Map<String, Object> toRecruitmentDTO(RaidRecruitment r, int participantCount) {
+    Map<String, Object> dto = new HashMap<>();
+    dto.put("recruitmentId", r.getRecruitmentId());
+    dto.put("raidId", r.getRaidId());
+    dto.put("raidName", r.getRaidName());
+    dto.put("requiredItemLevel", r.getRequiredItemLevel());
+    dto.put("raidDateTime", r.getRaidDateTime());
+    dto.put("creatorUserId", r.getCreatorUserId());
+    dto.put("createdAt", r.getCreatedAt());
+    dto.put("status", r.getStatus());
+    dto.put("maxPartySize", r.getMaxPartySize());
+    dto.put("description", r.getDescription());
+    dto.put("currentParticipants", participantCount);
+    return dto;
+  }
+
+  private Map<String, Object> toParticipantDTO(RaidParticipant p) {
+    Map<String, Object> dto = new HashMap<>();
+    dto.put("participantId", p.getParticipantId());
+    dto.put("characterName", p.getCharacterName());
+    dto.put("className", p.getClassName());
+    dto.put("itemLevel", p.getItemLevel());
+    dto.put("role", p.getRole());
+    dto.put("joinedAt", p.getJoinedAt());
+
+    Map<String, Object> charData = new HashMap<>();
+    charData.put("id", p.getCharacter().getId());
+    dto.put("character", charData);
+
+    return dto;
+  }
+
   @Data
   static class JoinRequest {
     private Long characterId;
     private String role;
-  }
-
-  @Data
-  static class RecruitmentDetailResponse {
-    private RaidRecruitment recruitment;
-    private List<RaidParticipant> participants;
   }
 }
