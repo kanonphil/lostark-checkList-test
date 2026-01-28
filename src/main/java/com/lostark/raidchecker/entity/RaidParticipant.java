@@ -1,5 +1,6 @@
 package com.lostark.raidchecker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public class RaidParticipant {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "recruitment_id", nullable = false)
+  @JsonIgnore
   private RaidRecruitment recruitment;
 
   @ManyToOne(fetch = FetchType.LAZY)

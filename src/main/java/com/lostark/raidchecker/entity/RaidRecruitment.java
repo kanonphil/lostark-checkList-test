@@ -1,5 +1,6 @@
 package com.lostark.raidchecker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -43,6 +44,7 @@ public class RaidRecruitment {
   private String description;
 
   @OneToMany(mappedBy = "recruitment", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
   private List<RaidParticipant> participants;
 
   @PrePersist
