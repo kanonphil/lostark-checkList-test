@@ -53,7 +53,7 @@ function RaidChecklist({ character, onUpdate }) {
   const loadTotalGold = async () => {
     try {
       const response = await completionAPI.getTotalGold(character.id);
-      console.log('총 골드 조회:', response.data);
+      // console.log('총 골드 조회:', response.data);
       setTotalGold(response.data);
     } catch (error) {
       console.error('총 골드 조회 실패:', error);
@@ -73,10 +73,10 @@ function RaidChecklist({ character, onUpdate }) {
       
       // ✅ 총 골드도 새로 조회
       const goldResponse = await completionAPI.getTotalGold(character.id);
-      console.log('총 골드 조회 완료:', goldResponse.data);
+      // console.log('총 골드 조회 완료:', goldResponse.data);
       setTotalGold(goldResponse.data);
       
-      console.log('데이터 새로고침 완료!');
+      // console.log('데이터 새로고침 완료!');
     } catch (error) {
       console.error('데이터 새로고침 실패:', error);
     }
@@ -85,10 +85,10 @@ function RaidChecklist({ character, onUpdate }) {
   const handleGateComplete = async (gateCompletionId, extraReward) => {
     try {
       setProcessingGateId(gateCompletionId);
-      console.log('관문 완료 요청:', gateCompletionId, '더보기:', extraReward);
+      // console.log('관문 완료 요청:', gateCompletionId, '더보기:', extraReward);
       
       await completionAPI.completeGate(gateCompletionId, extraReward);
-      console.log('관문 완료 성공');
+      // console.log('관문 완료 성공');
       
       await refreshData();
       
@@ -107,17 +107,17 @@ function RaidChecklist({ character, onUpdate }) {
   const handleGateUncomplete = async (gateCompletionId) => {
     try {
       setProcessingGateId(gateCompletionId);
-      console.log('=== 완료 취소 시작 ===');
-      console.log('취소할 관문 ID:', gateCompletionId);
+      // console.log('=== 완료 취소 시작 ===');
+      // console.log('취소할 관문 ID:', gateCompletionId);
       
       // ✅ 취소 API 호출
       const response = await completionAPI.uncompleteGate(gateCompletionId);
-      console.log('취소 API 응답:', response.data);
+      // console.log('취소 API 응답:', response.data);
       
       // ✅ 데이터 완전히 새로고침
       await refreshData();
       
-      console.log('=== 완료 취소 완료 ===');
+      // console.log('=== 완료 취소 완료 ===');
     } catch (error) {
       console.error('완료 취소 실패:', error);
       alert('완료 취소에 실패했습니다: ' + (error.response?.data || error.message));

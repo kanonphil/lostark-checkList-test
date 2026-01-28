@@ -2,10 +2,15 @@ package com.lostark.raidchecker.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"recruitment", "character"})
 @Entity
 @Table(name = "raid_participants",
         uniqueConstraints = @UniqueConstraint(columnNames = {"recruitment_id", "character_id"})
@@ -24,6 +29,7 @@ public class RaidParticipant {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "character_id", nullable = false)
+  @JsonIgnore
   private Character character;
 
   @Column(name = "character_name", nullable = false, length = 50)

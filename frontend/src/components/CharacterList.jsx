@@ -26,8 +26,8 @@ function CharacterList({ onCharacterSelect, currentUserId, refreshTrigger }) {
   }, [])
 
   useEffect(() => {
-    console.log('=== CharacterList useEffect 실행 ===');
-    console.log('currentUserId:', currentUserId);
+    // console.log('=== CharacterList useEffect 실행 ===');
+    // console.log('currentUserId:', currentUserId);
     loadData();
   }, [currentUserId, refreshTrigger]); // ✅ refreshTrigger 추가
 
@@ -35,10 +35,10 @@ function CharacterList({ onCharacterSelect, currentUserId, refreshTrigger }) {
     try {
       setLoading(true);
       
-      console.log('API 호출 전 - currentUserId:', currentUserId);
+      // console.log('API 호출 전 - currentUserId:', currentUserId);
       const charResponse = await characterAPI.getAll(currentUserId);
-      console.log('API 응답:', charResponse.data);
-      console.log('캐릭터 개수:', charResponse.data.length);
+      // console.log('API 응답:', charResponse.data);
+      // console.log('캐릭터 개수:', charResponse.data.length);
       
       setCharacters(charResponse.data);
       
@@ -74,7 +74,7 @@ function CharacterList({ onCharacterSelect, currentUserId, refreshTrigger }) {
       }
       
       setCharacterStats(stats);
-      console.log('=== 전체 캐릭터 통계 로딩 완료 ===');
+      // console.log('=== 전체 캐릭터 통계 로딩 완료 ===');
     } catch (error) {
       console.error('데이터 로딩 실패:', error);
     } finally {
