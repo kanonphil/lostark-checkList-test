@@ -190,7 +190,7 @@ function Calendar({ characters }) {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
-        gridAutoRows: isMobile ? '100px' : '120px',
+        // gridAutoRows: isMobile ? '100px' : '120px',
         padding: '0 20px',
         width: '100%',
         maxWidth: '100%',
@@ -212,7 +212,7 @@ function Calendar({ characters }) {
                 overflow: 'hidden',
                 position: 'relative',
                 minWidth: 0,
-                height: isMobile ? '100px' : '120px',  // ✅ minHeight → height로 변경 (고정)
+                height: isMobile ? '100px' : '120px',
                 width: '100%',
                 boxSizing: 'border-box',
               }}
