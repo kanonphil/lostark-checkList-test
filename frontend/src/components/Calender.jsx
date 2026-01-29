@@ -188,7 +188,7 @@ function Calendar({ characters }) {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
-        gridAutoRows: isMobile ? '100px' : '120px',
+        gridAutoRows: isMobile ? '140px' : '160px',
         padding: '0 20px',
         width: '100%',
         maxWidth: '100%',
