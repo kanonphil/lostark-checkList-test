@@ -19,7 +19,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     
-    console.log('포맷된 날짜:', `${year}-${month}-${day}`);  // 디버깅
+    // console.log('포맷된 날짜:', `${year}-${month}-${day}`);  // 디버깅
     
     return `${year}-${month}-${day}`;
   };
@@ -85,7 +85,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
       // ✅ 한국 시간 그대로 전송 (타임존 변환 안 함)
       const raidDateTime = `${formData.raidDate}T${formData.raidHour}:${formData.raidMinute}:00`;
       
-      console.log('전송할 시간:', raidDateTime);  // 디버깅
+      // console.log('전송할 시간:', raidDateTime);  // 디버깅
       
       const response = await recruitmentAPI.create({
         raidId: formData.raidId,
