@@ -203,7 +203,6 @@ function Calendar({ characters }) {
                 overflow: 'hidden',  // 넘치는 내용 숨김
                 position: 'relative',
                 minWidth: 0,
-                maxWidth: '100%',
                 boxSizing: 'border-box',
               }}
             >
@@ -224,7 +223,7 @@ function Calendar({ characters }) {
                     flexDirection: 'column',
                     gap: '3px',
                     overflow: 'hidden',
-                    width: '100%',
+                    minWidth: 0,
                   }}>
                     {dateRecruitments.map(recruitment => (
                       <RecruitmentBadge
