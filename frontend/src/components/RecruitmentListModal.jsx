@@ -103,6 +103,7 @@ function RecruitmentListModal({ date, recruitments, onClose, onSelectRecruitment
               <div style={{
                 fontSize: '14px',
                 color: theme.text.secondary,
+                textAlign: 'left',
               }}>
                 {formatDateTime(recruitment.raidDateTime)} | 레벨 {recruitment.requiredItemLevel}
               </div>
