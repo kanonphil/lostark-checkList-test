@@ -209,7 +209,7 @@ function Calendar({ characters }) {
                 borderRadius: '5px',
                 cursor: date ? 'pointer' : 'default',
                 border: date ? `1px solid ${theme.border?.primary || theme.card.border}` : 'none',
-                overflow: 'hidden',
+                // overflow: 'hidden',
                 position: 'relative',
                 minWidth: 0,
                 height: isMobile ? '100px' : '120px',
@@ -233,7 +233,7 @@ function Calendar({ characters }) {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '3px',
-                    overflow: 'hidden',
+                    // overflow: 'hidden',
                     minWidth: 0,
                   }}>
                     {dateRecruitments.slice(0, 3).map(recruitment => (  // ✅ 처음 3개만
