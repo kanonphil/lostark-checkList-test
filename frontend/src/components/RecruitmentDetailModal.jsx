@@ -213,6 +213,7 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
               margin: 0,
               color: theme.text.primary,
               flex: 1,
+              textAlign: 'left',
             }}>
               {detail.recruitment.raidName}
             </h2>
@@ -230,6 +231,7 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
                   fontSize: '14px',
                   fontWeight: 'bold',
                   marginLeft: '10px',
+                  flexShrink: 0,
                 }}
               >
                 모집 취소
@@ -237,7 +239,11 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
             )}
           </div>
           
-          <div style={{ color: theme.text.secondary, fontSize: '14px' }}>
+          <div style={{ 
+            color: theme.text.secondary, 
+            fontSize: '14px',
+            textAlign: 'left',
+          }}>
             <div>일시: {formatDateTime(detail.recruitment.raidDateTime)}</div>
             <div>요구 레벨: {detail.recruitment.requiredItemLevel}</div>
             <div>인원: {detail.recruitment.currentParticipants}/{detail.recruitment.maxPartySize}</div>
@@ -253,6 +259,7 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
             marginBottom: '10px',
             color: theme.text.primary,
             fontSize: '16px',
+            textAlign: 'left',
           }}>
             참가자 목록
           </h3>
@@ -282,7 +289,7 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
                       alignItems: 'center',
                     }}
                   >
-                    <div>
+                    <div style={{textAlign: 'left'}}>
                       <div style={{ 
                         fontWeight: 'bold',
                         color: theme.text.primary 
@@ -308,6 +315,7 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
                           borderRadius: '5px',
                           cursor: 'pointer',
                           fontSize: '12px',
+                          flexShrink: 0,
                         }}
                       >
                         취소
