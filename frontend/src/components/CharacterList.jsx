@@ -61,7 +61,7 @@ function CharacterList({ onCharacterSelect, currentUserId, refreshTrigger }) {
             completionRate
           };
           
-          console.log(`캐릭터 ${char.characterName} 통계:`, stats[char.id]);
+          // console.log(`캐릭터 ${char.characterName} 통계:`, stats[char.id]);
         } catch (error) {
           console.error(`캐릭터 ${char.characterName} 완료 현황 로딩 실패:`, error);
           stats[char.id] = {
