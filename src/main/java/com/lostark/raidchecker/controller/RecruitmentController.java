@@ -164,7 +164,7 @@ public class RecruitmentController {
     dto.put("joinedAt", p.getJoinedAt());
 
     Map<String, Object> charData = new HashMap<>();
-    charData.put("id", p.getCharacter().getId());
+    charData.put("id", p.getCharacterIdValue());
     dto.put("character", charData);
 
     return dto;

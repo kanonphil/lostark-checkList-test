@@ -51,4 +51,7 @@ public class RaidParticipant {
   protected void onCreate() {
     joinedAt = LocalDateTime.now();
   }
+
+  @Column(name = "character_id", insertable = false, updatable = false)
+  private Long characterIdValue;
 }
