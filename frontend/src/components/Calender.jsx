@@ -116,6 +116,8 @@ function Calendar({ characters }) {
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '20px',
+        maxWidth: '1200px',
+        margin: '0 auto 20px auto',
       }}>
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
@@ -162,6 +164,8 @@ function Calendar({ characters }) {
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
         marginBottom: '5px',
+        maxWidth: '1200px',
+        margin: '0 auto 5px auto',
       }}>
         {weekDays.map(day => (
           <div
@@ -186,6 +190,8 @@ function Calendar({ characters }) {
         gap: '5px',
         gridAutoRows: isMobile ? '100px' : '120px',
         width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
