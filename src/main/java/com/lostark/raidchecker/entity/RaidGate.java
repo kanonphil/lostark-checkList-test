@@ -2,13 +2,14 @@ package com.lostark.raidchecker.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "raid_gates")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@ToString(exclude = "raid")
 public class RaidGate {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

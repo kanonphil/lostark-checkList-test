@@ -2,11 +2,16 @@ package com.lostark.raidchecker.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@ToString(exclude = "participants")
 @Entity
 @Table(name = "raid_recruitments")
 public class RaidRecruitment {
