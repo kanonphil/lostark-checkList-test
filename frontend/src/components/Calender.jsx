@@ -109,9 +109,9 @@ function Calendar({ characters }) {
       minHeight: '100vh',
       width: '100%',
       // maxWidth: '100%',
-      maxWidth: '1200px%',
+      // maxWidth: '1200px',
       // overflow: 'hidden',
-      margin: '0 auto',
+      // margin: '0 auto',
       boxSizing: 'border-box',
     }}>
       {/* 월 네비게이션 */}
