@@ -196,6 +196,10 @@ function Calendar({ characters }) {
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
+
+          if (date && dateRecruitments.length > 0) {              
+            console.log(`${date.getDate()}일: ${dateRecruitments.length}개`);
+          }
           
           return (
             <div
