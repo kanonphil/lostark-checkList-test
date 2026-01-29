@@ -1,4 +1,3 @@
-// src/components/RecruitmentDetailModal.jsx
 import { useState, useEffect } from 'react';
 import { recruitmentAPI, characterAPI } from '../services/api';
 import { useTheme, getTheme } from '../hooks/useTheme';
@@ -15,14 +14,20 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
   const [joining, setJoining] = useState(false);
 
   const userId = parseInt(localStorage.getItem('userId'));
-  const isCreator = detail.recruitment.creatorUserId === userId;
 
   useEffect(() => {
-    loadDetail();
-    loadMyCharacters();
-  }, [recruitment.recruitmentId]);
+    if (recruitment?.recruitmentId) {  // ✅ null 체크 추가
+      loadDetail();
+      loadMyCharacters();
+    }
+  }, [recruitment?.recruitmentId]);  // ✅ optional chaining 추가
 
   const loadDetail = async () => {
+    if (!recruitment?.recruitmentId) {  // ✅ null 체크 추가
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await recruitmentAPI.getDetail(recruitment.recruitmentId);
       setDetail(response.data);
@@ -36,10 +41,10 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
   const loadMyCharacters = async () => {
     try {
       const userId = parseInt(localStorage.getItem('userId'));
-      console.log('userId:', userId); // 디버깅
+      console.log('userId:', userId);
       
       const response = await characterAPI.getAll(userId);
-      console.log('캐릭터 응답:', response.data); // 디버깅
+      console.log('캐릭터 응답:', response.data);
       
       setMyCharacters(response.data || []);
     } catch (error) {
@@ -57,7 +62,6 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
       return;
     }
 
-    // 발키리가 아니면 자동으로 역할 설정
     if (char.className === '바드' || char.className === '홀리나이트') {
       setSelectedRole('SUPPORT');
     } else if (char.className !== '발키리') {
@@ -105,6 +109,36 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
     }
   };
 
+  // 삭제 핸들러
+  const handleDelete = async () => {
+    if (!confirm('정말 이 모집을 삭제하시겠습니까?\n참가 신청한 모든 정보가 함께 삭제됩니다.')) {
+      return;
+    }
+
+    try {
+      await recruitmentAPI.delete(recruitment.recruitmentId);
+      alert('모집이 삭제되었습니다');
+      onUpdate();
+      onClose();
+    } catch (error) {
+      alert(error.response?.data || '삭제 실패');
+    }
+  };
+
+  // 시간 포맷 함수
+  const formatDateTime = (dateTime) => {
+    const date = new Date(dateTime);
+    return date.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+
+  // ✅ 로딩 중이거나 detail이 없을 때
   if (loading || !detail) {
     return (
       <div style={{
@@ -125,40 +159,13 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
           borderRadius: '10px',
           color: theme.text.primary,
         }}>
-          로딩 중...
+          {loading ? '로딩 중...' : '모집 정보를 불러올 수 없습니다.'}
         </div>
       </div>
     );
   }
 
-  // 삭제 핸들러
-  const handleDelete = async () => {
-    if (!confirm('정말 이 모집을 삭제하시겠습니까?')) {
-      return;
-    }
-
-    try {
-      await recruitmentAPI.delete(recruitment.recruitmentId)
-      alert('모집이 삭제되었습니다')
-      onUpdate()
-      onClose()
-    } catch (error) {
-      alert(error.response?.data || '삭제 실패')
-    }
-  };
-
-  // 시간 포맷 수정 (UTC -> 로컬 시간)
-  const formatDateTime = (dateTime) => {
-    const date = new Date(dateTime);
-    return date.toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false  // 24시간 형식
-    });
-  };
+  const isCreator = detail?.recruitment?.creatorUserId === userId;  // ✅ optional chaining
 
   const eligibleChars = myCharacters.filter(
     char => char.itemLevel >= detail.recruitment.requiredItemLevel
@@ -204,32 +211,34 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
           }}>
             <h2 style={{ 
               margin: 0,
-              color: theme.text.primary 
+              color: theme.text.primary,
+              flex: 1,
             }}>
               {detail.recruitment.raidName}
             </h2>
             
-            {/* ✅ 모집 생성자에게만 삭제 버튼 표시 */}
             {isCreator && (
               <button
                 onClick={handleDelete}
                 style={{
-                  padding: '5px 10px',
+                  padding: '8px 16px',
                   backgroundColor: '#f44336',
                   color: 'white',
                   border: 'none',
                   borderRadius: '5px',
                   cursor: 'pointer',
-                  fontSize: '12px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  marginLeft: '10px',
                 }}
               >
-                모집 삭제
+                모집 취소
               </button>
             )}
           </div>
           
           <div style={{ color: theme.text.secondary, fontSize: '14px' }}>
-            <div>일시: {new Date(detail.recruitment.raidDateTime).toLocaleString('ko-KR')}</div>
+            <div>일시: {formatDateTime(detail.recruitment.raidDateTime)}</div>
             <div>요구 레벨: {detail.recruitment.requiredItemLevel}</div>
             <div>인원: {detail.recruitment.currentParticipants}/{detail.recruitment.maxPartySize}</div>
             {detail.recruitment.description && (
