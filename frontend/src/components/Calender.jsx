@@ -108,8 +108,10 @@ function Calendar({ characters }) {
       backgroundColor: theme.bg.primary,
       minHeight: '100vh',
       width: '100%',
-      maxWidth: '100%',
-      overflow: 'hidden',
+      // maxWidth: '100%',
+      maxWidth: '1200px%',
+      // overflow: 'hidden',
+      margin: '0 auto',
       boxSizing: 'border-box',
     }}>
       {/* 월 네비게이션 */}
@@ -196,10 +198,6 @@ function Calendar({ characters }) {
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
-
-          if (date && dateRecruitments.length > 0) {              
-            console.log(`${date.getDate()}일: ${dateRecruitments.length}개`);
-          }
           
           return (
             <div
