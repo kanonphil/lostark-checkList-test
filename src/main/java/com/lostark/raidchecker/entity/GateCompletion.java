@@ -22,7 +22,7 @@ public class GateCompletion {
   @JoinColumn(name = "weekly_completion_id", nullable = false)
   private WeeklyCompletion weeklyCompletion;
 
-  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "raid"})  // ✅ 추가
+  @JsonIgnore  // ✅ 추가
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "raid_gate_id", nullable = false)
   private RaidGate raidGate;

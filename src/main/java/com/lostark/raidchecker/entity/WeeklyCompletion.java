@@ -1,5 +1,6 @@
 package com.lostark.raidchecker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,12 +21,12 @@ public class WeeklyCompletion {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})  // ✅ 추가
+  @JsonIgnore  // ✅ 추가
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "character_id", nullable = false)
   private Character character;
 
-  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "gates"})  // ✅ 추가
+  @JsonIgnore  // ✅ 추가
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "raid_id", nullable = false)
   private Raid raid;
@@ -40,6 +41,7 @@ public class WeeklyCompletion {
   private Integer earnedGold = 0;
 
   @OneToMany(mappedBy = "weeklyCompletion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)  // ✅ EAGER 추가
+  @JsonIgnore
   private List<GateCompletion> gateCompletions = new ArrayList<>();
 
   // 골드 계산 메서드
