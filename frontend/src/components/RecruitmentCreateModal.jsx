@@ -7,11 +7,20 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
   const theme = getTheme(isDark);
 
   const formatDateForInput = (date) => {
-    if (!date) return new Date().toISOString().slice(0, 10);
+    if (!date) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
     
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+    
+    console.log('포맷된 날짜:', `${year}-${month}-${day}`);  // 디버깅
+    
     return `${year}-${month}-${day}`;
   };
 
@@ -157,6 +166,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                 borderRadius: '5px',
                 backgroundColor: theme.bg.secondary,
                 color: theme.text.primary,
+                boxSizing: 'border-box',
               }}
             >
               <option value="">레이드 선택</option>
@@ -198,6 +208,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                 borderRadius: '5px',
                 backgroundColor: theme.bg.secondary,
                 color: theme.text.primary,
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -226,6 +237,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                 borderRadius: '5px',
                 backgroundColor: theme.bg.secondary,
                 color: theme.text.primary,
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -255,6 +267,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                   borderRadius: '5px',
                   backgroundColor: theme.bg.secondary,
                   color: theme.text.primary,
+                  boxSizing: 'border-box',
                 }}
               >
                 {Array.from({length: 24}, (_, i) => {
@@ -283,6 +296,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                   borderRadius: '5px',
                   backgroundColor: theme.bg.secondary,
                   color: theme.text.primary,
+                  boxSizing: 'border-box',
                 }}
               >
                 {Array.from({length: 12}, (_, i) => {
@@ -320,6 +334,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                 borderRadius: '5px',
                 backgroundColor: theme.bg.secondary,
                 color: theme.text.primary,
+                boxSizing: 'border-box',
               }}
             >
               <option value={4}>4인</option>
@@ -353,6 +368,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
                 backgroundColor: theme.bg.secondary,
                 color: theme.text.primary,
                 resize: 'vertical',
+                boxSizing: 'border-box',
               }}
             />
           </div>

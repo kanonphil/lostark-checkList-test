@@ -82,7 +82,12 @@ function Calendar({ characters }) {
 
   const handleDateClick = (date) => {
     if (!date) return;
-    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    // ✅ 새로운 Date 객체 생성 (타임존 문제 방지)
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+    
+    console.log('선택한 날짜:', localDate);  // 디버깅
+    
     setSelectedDate(localDate);
     setShowCreateModal(true);
   };
@@ -179,7 +184,8 @@ function Calendar({ characters }) {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
-        gridAutoRows: isMobile ? '100px' : '120px',  // ✅ 행 높이 고정
+        gridAutoRows: isMobile ? '100px' : '120px',
+        width: '100%',
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
@@ -194,10 +200,11 @@ function Calendar({ characters }) {
                 borderRadius: '5px',
                 cursor: date ? 'pointer' : 'default',
                 border: date ? `1px solid ${theme.border?.primary || theme.card.border}` : 'none',
-                overflow: 'hidden',  // ✅ 넘치는 내용 숨김
+                overflow: 'hidden',  // 넘치는 내용 숨김
                 position: 'relative',
                 minWidth: 0,
-                width: '100%',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
               }}
             >
               {date && (
@@ -258,6 +265,7 @@ function Calendar({ characters }) {
       {selectedRecruitment && (
         <RecruitmentDetailModal
           recruitment={selectedRecruitment}
+          characters={characters}
           onClose={() => setSelectedRecruitment(null)}
           onUpdate={() => {
             loadRecruitments();

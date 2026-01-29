@@ -24,7 +24,7 @@ public class RecruitmentController {
 
   @PostMapping
   public ResponseEntity<?> createRecruitment(
-          @RequestBody CreateRecruitmentRequest request,
+          @RequestBody Map<String, Object> requestData,
           HttpSession session) {
 
     Long userId = (Long) session.getAttribute("userId");
@@ -32,18 +32,29 @@ public class RecruitmentController {
       return ResponseEntity.status(401).body("로그인이 필요합니다");
     }
 
-    RaidRecruitment recruitment = new RaidRecruitment();
-    recruitment.setRaidId(request.getRaidId());
-    recruitment.setRaidName(request.getRaidName());
-    recruitment.setRequiredItemLevel(request.getRequiredItemLevel());
-    recruitment.setRaidDateTime(LocalDateTime.parse(request.getRaidDateTime()));
-    recruitment.setMaxPartySize(request.getMaxPartySize());
-    recruitment.setDescription(request.getDescription());
+    try {
+      RaidRecruitment recruitment = new RaidRecruitment();
+      recruitment.setRaidId(requestData.get("raidId") != null ?
+              Long.parseLong(requestData.get("raidId").toString()) : null);
+      recruitment.setRaidName((String) requestData.get("raidName"));
+      recruitment.setRequiredItemLevel(
+              Double.parseDouble(requestData.get("requiredItemLevel").toString()));
 
-    RaidRecruitment created = recruitmentService.createRecruitment(recruitment, userId);
+      // ✅ String을 LocalDateTime으로 파싱
+      String dateTimeStr = (String) requestData.get("raidDateTime");
+      recruitment.setRaidDateTime(LocalDateTime.parse(dateTimeStr));
 
-    // DTO로 변환
-    return ResponseEntity.ok(toRecruitmentDTO(created, 0));
+      recruitment.setMaxPartySize(
+              Integer.parseInt(requestData.get("maxPartySize").toString()));
+      recruitment.setDescription((String) requestData.get("description"));
+
+      RaidRecruitment created = recruitmentService.createRecruitment(recruitment, userId);
+
+      return ResponseEntity.ok(toRecruitmentDTO(created, 0));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(500).body("모집 등록 실패: " + e.getMessage());
+    }
   }
 
   @GetMapping
