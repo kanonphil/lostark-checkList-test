@@ -106,9 +106,13 @@ function Calendar({ characters }) {
 
   return (
     <div style={{ 
-      padding: isMobile ? '10px' : '20px',
+      padding: 0,
       backgroundColor: theme.bg.primary,
       minHeight: '100vh',
+      width: '100%',
+      maxWidth: '100%',
+      overflow: 'hidden',
+      boxSizing: 'border-box',
     }}>
       {/* 월 네비게이션 */}
       <div style={{
@@ -116,8 +120,7 @@ function Calendar({ characters }) {
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '20px',
-        maxWidth: '1200px',
-        margin: '0 auto 20px auto',
+        padding: isMobile ? '10px' : '20px',
       }}>
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
@@ -164,8 +167,7 @@ function Calendar({ characters }) {
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
         marginBottom: '5px',
-        maxWidth: '1200px',
-        margin: '0 auto 5px auto',
+        padding: '0 20px',
       }}>
         {weekDays.map(day => (
           <div
@@ -189,9 +191,10 @@ function Calendar({ characters }) {
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
         gridAutoRows: isMobile ? '100px' : '120px',
+        padding: '0 20px',
         width: '100%',
-        maxWidth: '1200px',
-        margin: '0 auto',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
@@ -206,9 +209,11 @@ function Calendar({ characters }) {
                 borderRadius: '5px',
                 cursor: date ? 'pointer' : 'default',
                 border: date ? `1px solid ${theme.border?.primary || theme.card.border}` : 'none',
-                overflow: 'hidden',  // 넘치는 내용 숨김
+                overflow: 'hidden',
                 position: 'relative',
                 minWidth: 0,
+                height: isMobile ? '100px' : '120px',  // ✅ minHeight → height로 변경 (고정)
+                width: '100%',
                 boxSizing: 'border-box',
               }}
             >
@@ -223,7 +228,7 @@ function Calendar({ characters }) {
                     {date.getDate()}
                   </div>
                   
-                  {/* 모집 표시 - 전광판 애니메이션 */}
+                  {/* 모집 표시 */}
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -231,7 +236,7 @@ function Calendar({ characters }) {
                     overflow: 'hidden',
                     minWidth: 0,
                   }}>
-                    {dateRecruitments.map(recruitment => (
+                    {dateRecruitments.slice(0, 3).map(recruitment => (  // ✅ 처음 3개만
                       <RecruitmentBadge
                         key={recruitment.recruitmentId}
                         recruitment={recruitment}
@@ -244,6 +249,19 @@ function Calendar({ characters }) {
                         }}
                       />
                     ))}
+                    {dateRecruitments.length > 3 && (  // ✅ 3개 넘으면 "더보기"
+                      <div style={{
+                        fontSize: isMobile ? '10px' : '11px',
+                        padding: '3px 4px',
+                        backgroundColor: '#666',
+                        color: 'white',
+                        borderRadius: '3px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                      }}>
+                        +{dateRecruitments.length - 3}개
+                      </div>
+                    )}
                   </div>
                 </>
               )}
