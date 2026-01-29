@@ -6,11 +6,20 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
   const { isDark } = useTheme();
   const theme = getTheme(isDark);
 
+  const formatDateForInput = (date) => {
+    if (!date) return new Date().toISOString().slice(0, 10);
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [formData, setFormData] = useState({
     raidId: '',
     raidName: '',
     requiredItemLevel: '',
-    raidDate: selectedDate ? selectedDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+    raidDate: formatDateForInput(selectedDate),  // ✅ 헬퍼 함수 사용
     raidHour: '20',
     raidMinute: '00',
     maxPartySize: 4,
@@ -64,19 +73,16 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
     try {
       setLoading(true);
       
-      // ✅ 한국 시간으로 변환
-      const localDateTime = `${formData.raidDate}T${formData.raidHour}:${formData.raidMinute}:00`;
-      const date = new Date(localDateTime);
+      // ✅ 한국 시간 그대로 전송 (타임존 변환 안 함)
+      const raidDateTime = `${formData.raidDate}T${formData.raidHour}:${formData.raidMinute}:00`;
       
-      // UTC+9를 UTC로 변환하지 않고 그대로 전송
-      const koreaDateTime = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-      const isoString = koreaDateTime.toISOString();
+      console.log('전송할 시간:', raidDateTime);  // 디버깅
       
       const response = await recruitmentAPI.create({
         raidId: formData.raidId,
         raidName: formData.raidName,
         requiredItemLevel: parseFloat(formData.requiredItemLevel),
-        raidDateTime: isoString,
+        raidDateTime: raidDateTime,  // ✅ ISO 변환 안 함
         maxPartySize: formData.maxPartySize,
         description: formData.description
       });
