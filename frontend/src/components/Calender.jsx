@@ -109,8 +109,6 @@ function Calendar({ characters }) {
       padding: isMobile ? '10px' : '20px',
       backgroundColor: theme.bg.primary,
       minHeight: '100vh',
-      maxWidth: '100%',
-      overflow: 'hidden',
     }}>
       {/* 월 네비게이션 */}
       <div style={{
@@ -118,7 +116,6 @@ function Calendar({ characters }) {
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '20px',
-        maxWidth: '100%',
       }}>
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
@@ -165,7 +162,6 @@ function Calendar({ characters }) {
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
         marginBottom: '5px',
-        maxWidth: '100px',
       }}>
         {weekDays.map(day => (
           <div
@@ -190,8 +186,6 @@ function Calendar({ characters }) {
         gap: '5px',
         gridAutoRows: isMobile ? '100px' : '120px',
         width: '100%',
-        maxWidth: '100%',
-        overflow: 'hidden',
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
@@ -210,7 +204,6 @@ function Calendar({ characters }) {
                 position: 'relative',
                 minWidth: 0,
                 maxWidth: '100%',
-                width: '100%',
                 boxSizing: 'border-box',
               }}
             >
@@ -317,9 +310,6 @@ function RecruitmentBadge({ recruitment, formatName, theme, isMobile, onClick })
         overflow: 'hidden',
         whiteSpace: 'nowrap',
         position: 'relative',
-        width: '100%',
-        maxWidth: '100%',
-        boxSizing: 'border-box',
       }}
       title={text}
     >
