@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { recruitmentAPI } from '../services/api';
 import RecruitmentCreateModal from './RecruitmentCreateModal';
 import RecruitmentDetailModal from './RecruitmentDetailModal';
+import RecruitmentListModal from './RecruitmentListModal';  // ✅ 추가
 import { useTheme, getTheme } from '../hooks/useTheme';
 
 function Calendar({ characters }) {
@@ -14,7 +15,8 @@ function Calendar({ characters }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedRecruitment, setSelectedRecruitment] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [expandedDate, setExpandedDate] = useState(null)
+  const [showListModal, setShowListModal] = useState(false);  // ✅ 추가
+  const [listModalDate, setListModalDate] = useState(null);   // ✅ 추가
 
   useEffect(() => {
     const checkMobile = () => {
@@ -84,18 +86,13 @@ function Calendar({ characters }) {
   const handleDateClick = (date) => {
     if (!date) return;
     
-    // ✅ 새로운 Date 객체 생성 (타임존 문제 방지)
     const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-    
-    console.log('선택한 날짜:', localDate);  // 디버깅
     
     setSelectedDate(localDate);
     setShowCreateModal(true);
   };
 
-  // 레이드 이름 짧게 포맷
   const formatRecruitmentName = (recruitment) => {
-    // "카제로스 2막 카제로스 2막 (노말)" -> "카제로스 2막 (노말)"
     const raidName = recruitment.raidName.split('(')[0].trim();
     const difficulty = recruitment.raidName.match(/\(([^)]+)\)/)?.[1] || '';
     
@@ -186,12 +183,12 @@ function Calendar({ characters }) {
         ))}
       </div>
 
-      {/* 날짜 그리드 - 고정 크기 */}
+      {/* 날짜 그리드 */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '5px',
-        // gridAutoRows: isMobile ? '100px' : '120px',
+        gridAutoRows: isMobile ? '100px' : '120px',
         padding: '0 20px',
         width: '100%',
         maxWidth: '100%',
@@ -199,23 +196,20 @@ function Calendar({ characters }) {
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
-          const dateKey = date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}` : null;
-          const isExpanded = expandedDate === dateKey;
           
           return (
             <div
               key={index}
-              onClick={() => !isExpanded && handleDateClick(date)}
+              onClick={() => handleDateClick(date)}
               style={{
                 padding: isMobile ? '5px' : '8px',
                 backgroundColor: date ? theme.card.bg : 'transparent',
                 borderRadius: '5px',
                 cursor: date ? 'pointer' : 'default',
                 border: date ? `1px solid ${theme.border?.primary || theme.card.border}` : 'none',
-                // overflow: 'hidden',
+                overflow: 'hidden',
                 position: 'relative',
                 minWidth: 0,
-                height: isMobile ? '100px' : '120px',
                 width: '100%',
                 boxSizing: 'border-box',
               }}
@@ -236,10 +230,10 @@ function Calendar({ characters }) {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '3px',
-                    // overflow: 'hidden',
+                    overflow: 'hidden',
                     minWidth: 0,
                   }}>
-                    {(isExpanded ? dateRecruitments : dateRecruitments.slice(0, 3)).map(recruitment => (
+                    {dateRecruitments.slice(0, 3).map(recruitment => (
                       <RecruitmentBadge 
                         key={recruitment.recruitmentId}
                         recruitment={recruitment}
@@ -252,11 +246,12 @@ function Calendar({ characters }) {
                         }}
                       />
                     ))}
-                    {dateRecruitments.length > 3 && (  // ✅ 3개 넘으면 "더보기"
+                    {dateRecruitments.length > 3 && (
                       <div 
                         onClick={(e) => {
                           e.stopPropagation();
-                          setExpandedDate(isExpanded ? null : dateKey);
+                          setListModalDate(date);
+                          setShowListModal(true);
                         }}
                         style={{
                           fontSize: isMobile ? '10px' : '11px',
@@ -268,7 +263,7 @@ function Calendar({ characters }) {
                           cursor: 'pointer',
                         }}
                       >
-                        {isExpanded ? '접기' : `+${dateRecruitments.length - 3}개`}
+                        +{dateRecruitments.length - 3}개
                       </div>
                     )}
                   </div>
@@ -304,17 +299,31 @@ function Calendar({ characters }) {
           }}
         />
       )}
+
+      {/* ✅ 모집 목록 모달 */}
+      {showListModal && listModalDate && (
+        <RecruitmentListModal
+          date={listModalDate}
+          recruitments={getRecruitmentsForDate(listModalDate)}
+          onClose={() => {
+            setShowListModal(false);
+            setListModalDate(null);
+          }}
+          onSelectRecruitment={(recruitment) => {
+            setSelectedRecruitment(recruitment);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-// ✅ 전광판 애니메이션 컴포넌트
+// 전광판 애니메이션 컴포넌트
 function RecruitmentBadge({ recruitment, formatName, theme, isMobile, onClick }) {
   const text = formatName(recruitment);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   
   useEffect(() => {
-    // 텍스트가 너무 길면 애니메이션 활성화
     const testElement = document.createElement('span');
     testElement.style.visibility = 'hidden';
     testElement.style.position = 'absolute';
@@ -325,7 +334,6 @@ function RecruitmentBadge({ recruitment, formatName, theme, isMobile, onClick })
     const textWidth = testElement.offsetWidth;
     document.body.removeChild(testElement);
     
-    // 칸 너비보다 길면 애니메이션
     setShouldAnimate(textWidth > (isMobile ? 70 : 100));
   }, [text, isMobile]);
 
