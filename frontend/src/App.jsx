@@ -325,34 +325,43 @@ function App() {
       <main style={{
         backgroundColor: theme.bg.primary,
         minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
       }}>
-        {activeTab === 'characters' && (
-          <CharacterList 
-            key={refreshKey} 
-            currentUserId={currentUser.id}
-            onCharacterSelect={handleCharacterSelect}
-          />
-        )}
-        {activeTab === 'checklist' && (
-          <RaidChecklist character={selectedCharacter} />
-        )}
-        {activeTab === 'comparison' && (
-          <RaidComparison key={refreshKey} currentUserId={currentUser.id} />
-        )}
-        {activeTab === 'management' && (
-          <CharacterManagement 
-            key={refreshKey} 
-            characters={characters}
-            currentUserId={currentUser.id}
-            onUpdate={handleCharacterUpdate} 
-          />
-        )}
-        {activeTab === 'party' && (
-          <PartyMatching />
-        )}
-        {activeTab === 'calendar' && (
-          <Calendar characters={characters} />
-        )}
+        <div style={{
+          width: '100%',
+          maxWidth: '1400px',  // 최대 너비 고정
+          padding: '0 20px',   // 좌우 여백
+          boxSizing: 'border-box',
+        }}>
+          {activeTab === 'characters' && (
+            <CharacterList 
+              key={refreshKey} 
+              currentUserId={currentUser.id}
+              onCharacterSelect={handleCharacterSelect}
+            />
+          )}
+          {activeTab === 'checklist' && (
+            <RaidChecklist character={selectedCharacter} />
+          )}
+          {activeTab === 'comparison' && (
+            <RaidComparison key={refreshKey} currentUserId={currentUser.id} />
+          )}
+          {activeTab === 'management' && (
+            <CharacterManagement 
+              key={refreshKey} 
+              characters={characters}
+              currentUserId={currentUser.id}
+              onUpdate={handleCharacterUpdate} 
+            />
+          )}
+          {activeTab === 'party' && (
+            <PartyMatching />
+          )}
+          {activeTab === 'calendar' && (
+            <Calendar characters={characters} />
+          )}
+        </div>
       </main>
     </div>
   );
