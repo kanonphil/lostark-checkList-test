@@ -14,6 +14,7 @@ function Calendar({ characters }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedRecruitment, setSelectedRecruitment] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [expandedDate, setExpandedDate] = useState(null)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -198,11 +199,13 @@ function Calendar({ characters }) {
       }}>
         {days.map((date, index) => {
           const dateRecruitments = getRecruitmentsForDate(date);
+          const dateKey = date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}` : null;
+          const isExpanded = expandedDate === dateKey;
           
           return (
             <div
               key={index}
-              onClick={() => handleDateClick(date)}
+              onClick={() => !isExpanded && handleDateClick(date)}
               style={{
                 padding: isMobile ? '5px' : '8px',
                 backgroundColor: date ? theme.card.bg : 'transparent',
@@ -236,8 +239,8 @@ function Calendar({ characters }) {
                     // overflow: 'hidden',
                     minWidth: 0,
                   }}>
-                    {dateRecruitments.slice(0, 3).map(recruitment => (  // ✅ 처음 3개만
-                      <RecruitmentBadge
+                    {(isExpanded ? dateRecruitments : dateRecruitments.slice(0, 3)).map(recruitment => (
+                      <RecruitmentBadge 
                         key={recruitment.recruitmentId}
                         recruitment={recruitment}
                         formatName={formatRecruitmentName}
@@ -250,16 +253,22 @@ function Calendar({ characters }) {
                       />
                     ))}
                     {dateRecruitments.length > 3 && (  // ✅ 3개 넘으면 "더보기"
-                      <div style={{
-                        fontSize: isMobile ? '10px' : '11px',
-                        padding: '3px 4px',
-                        backgroundColor: '#666',
-                        color: 'white',
-                        borderRadius: '3px',
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                      }}>
-                        +{dateRecruitments.length - 3}개
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedDate(isExpanded ? null : dateKey);
+                        }}
+                        style={{
+                          fontSize: isMobile ? '10px' : '11px',
+                          padding: '3px 4px',
+                          backgroundColor: '#666',
+                          color: 'white',
+                          borderRadius: '3px',
+                          textAlign: 'center',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {isExpanded ? '접기' : `+${dateRecruitments.length - 3}개`}
                       </div>
                     )}
                   </div>
