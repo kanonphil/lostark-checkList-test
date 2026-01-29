@@ -1,5 +1,6 @@
 package com.lostark.raidchecker.controller;
 
+import com.lostark.raidchecker.dto.CreateRecruitmentRequest;
 import com.lostark.raidchecker.entity.RaidRecruitment;
 import com.lostark.raidchecker.entity.RaidParticipant;
 import com.lostark.raidchecker.service.RecruitmentService;
@@ -23,13 +24,21 @@ public class RecruitmentController {
 
   @PostMapping
   public ResponseEntity<?> createRecruitment(
-          @RequestBody RaidRecruitment recruitment,
+          @RequestBody CreateRecruitmentRequest request,
           HttpSession session) {
 
     Long userId = (Long) session.getAttribute("userId");
     if (userId == null) {
       return ResponseEntity.status(401).body("로그인이 필요합니다");
     }
+
+    RaidRecruitment recruitment = new RaidRecruitment();
+    recruitment.setRaidId(request.getRaidId());
+    recruitment.setRaidName(request.getRaidName());
+    recruitment.setRequiredItemLevel(request.getRequiredItemLevel());
+    recruitment.setRaidDateTime(LocalDateTime.parse(request.getRaidDateTime()));
+    recruitment.setMaxPartySize(request.getMaxPartySize());
+    recruitment.setDescription(request.getDescription());
 
     RaidRecruitment created = recruitmentService.createRecruitment(recruitment, userId);
 

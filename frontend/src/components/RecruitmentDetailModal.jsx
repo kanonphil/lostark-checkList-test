@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { recruitmentAPI, characterAPI } from '../services/api';
 import { useTheme, getTheme } from '../hooks/useTheme';
 
-function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
+function RecruitmentDetailModal({ recruitment, onClose, onUpdate, characters }) {  // ✅ characters prop 추가
   const { isDark } = useTheme();
   const theme = getTheme(isDark);
 
@@ -16,14 +16,14 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
   const userId = parseInt(localStorage.getItem('userId'));
 
   useEffect(() => {
-    if (recruitment?.recruitmentId) {  // ✅ null 체크 추가
+    if (recruitment?.recruitmentId) {
       loadDetail();
       loadMyCharacters();
     }
-  }, [recruitment?.recruitmentId]);  // ✅ optional chaining 추가
+  }, [recruitment?.recruitmentId]);
 
   const loadDetail = async () => {
-    if (!recruitment?.recruitmentId) {  // ✅ null 체크 추가
+    if (!recruitment?.recruitmentId) {
       setLoading(false);
       return;
     }
@@ -40,12 +40,14 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
 
   const loadMyCharacters = async () => {
     try {
+      // ✅ characters prop이 있으면 사용, 없으면 API 호출
+      if (characters && characters.length > 0) {
+        setMyCharacters(characters);
+        return;
+      }
+      
       const userId = parseInt(localStorage.getItem('userId'));
-      console.log('userId:', userId);
-      
       const response = await characterAPI.getAll(userId);
-      console.log('캐릭터 응답:', response.data);
-      
       setMyCharacters(response.data || []);
     } catch (error) {
       console.error('캐릭터 조회 실패:', error);
@@ -109,7 +111,6 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
     }
   };
 
-  // 삭제 핸들러
   const handleDelete = async () => {
     if (!confirm('정말 이 모집을 삭제하시겠습니까?\n참가 신청한 모든 정보가 함께 삭제됩니다.')) {
       return;
@@ -125,7 +126,6 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
     }
   };
 
-  // 시간 포맷 함수
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
     return date.toLocaleString('ko-KR', {
@@ -138,7 +138,6 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
     });
   };
 
-  // ✅ 로딩 중이거나 detail이 없을 때
   if (loading || !detail) {
     return (
       <div style={{
@@ -165,7 +164,7 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
     );
   }
 
-  const isCreator = detail?.recruitment?.creatorUserId === userId;  // ✅ optional chaining
+  const isCreator = detail?.recruitment?.creatorUserId === userId;
 
   const eligibleChars = myCharacters.filter(
     char => char.itemLevel >= detail.recruitment.requiredItemLevel
@@ -179,28 +178,34 @@ function RecruitmentDetailModal({ recruitment, onClose, onUpdate }) {
   const isValkyrie = selectedChar?.className === '발키리';
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px',
-    }}>
-      <div style={{
-        backgroundColor: theme.card.bg,
-        borderRadius: '10px',
-        padding: '30px',
-        maxWidth: '600px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-      }}>
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '20px',
+      }}
+      onClick={onClose}  // ✅ 배경 클릭 시 닫기
+    >
+      <div 
+        style={{
+          backgroundColor: theme.card.bg,
+          borderRadius: '10px',
+          padding: '30px',
+          maxWidth: '600px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+        onClick={(e) => e.stopPropagation()}  // ✅ 모달 내부 클릭 시 이벤트 전파 중단
+      >
         {/* 헤더 */}
         <div style={{ marginBottom: '20px' }}>
           <div style={{ 

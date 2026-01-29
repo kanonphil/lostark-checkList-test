@@ -82,7 +82,8 @@ function Calendar({ characters }) {
 
   const handleDateClick = (date) => {
     if (!date) return;
-    setSelectedDate(date);
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    setSelectedDate(localDate);
     setShowCreateModal(true);
   };
 
@@ -195,6 +196,8 @@ function Calendar({ characters }) {
                 border: date ? `1px solid ${theme.border?.primary || theme.card.border}` : 'none',
                 overflow: 'hidden',  // ✅ 넘치는 내용 숨김
                 position: 'relative',
+                minWidth: 0,
+                width: '100%',
               }}
             >
               {date && (
@@ -214,6 +217,7 @@ function Calendar({ characters }) {
                     flexDirection: 'column',
                     gap: '3px',
                     overflow: 'hidden',
+                    width: '100%',
                   }}>
                     {dateRecruitments.map(recruitment => (
                       <RecruitmentBadge
