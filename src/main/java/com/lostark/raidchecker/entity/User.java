@@ -1,16 +1,21 @@
 package com.lostark.raidchecker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@ToString(exclude = "characters")  // ✅ 추가
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +27,6 @@ public class User {
   @Column(nullable = false)
   private String password;
 
-  // 보안 질문
   @Column(name = "security_question")
   private String securityQuestion;
 
@@ -30,6 +34,7 @@ public class User {
   private String securityAnswer;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore  // ✅ 추가
   private List<Character> characters = new ArrayList<>();
 
   @Column(name = "created_at")
