@@ -60,16 +60,23 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
       alert('필수 항목을 모두 입력해주세요');
       return;
     }
-
+  
     try {
       setLoading(true);
-      const raidDateTime = `${formData.raidDate}T${formData.raidHour}:${formData.raidMinute}:00`;
+      
+      // ✅ 한국 시간으로 변환
+      const localDateTime = `${formData.raidDate}T${formData.raidHour}:${formData.raidMinute}:00`;
+      const date = new Date(localDateTime);
+      
+      // UTC+9를 UTC로 변환하지 않고 그대로 전송
+      const koreaDateTime = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      const isoString = koreaDateTime.toISOString();
       
       const response = await recruitmentAPI.create({
         raidId: formData.raidId,
         raidName: formData.raidName,
         requiredItemLevel: parseFloat(formData.requiredItemLevel),
-        raidDateTime: new Date(raidDateTime).toISOString(),
+        raidDateTime: isoString,
         maxPartySize: formData.maxPartySize,
         description: formData.description
       });
@@ -78,6 +85,7 @@ function RecruitmentCreateModal({ onClose, onCreated, selectedDate }) {
       onCreated(response.data);
       onClose();
     } catch (error) {
+      console.error('모집 등록 실패:', error);
       alert(error.response?.data || '모집 등록 실패');
     } finally {
       setLoading(false);
